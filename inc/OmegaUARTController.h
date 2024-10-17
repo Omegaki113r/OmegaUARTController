@@ -10,7 +10,7 @@
  * File Created: Thursday, 17th October 2024 3:33:52 pm
  * Author: Omegaki113r (omegaki113r@gmail.com)
  * -----
- * Last Modified: Thursday, 17th October 2024 3:37:28 pm
+ * Last Modified: Thursday, 17th October 2024 7:00:21 pm
  * Modified By: Omegaki113r (omegaki113r@gmail.com)
  * -----
  * Copyright 2024 - 2024 0m3g4ki113r, Xtronic
@@ -30,6 +30,10 @@ extern "C"
 
 #include <stdint.h>
 
+    typedef enum
+    {
+        e8BITS = 0,
+    } OmegaUARTDataBits;
     typedef uint64_t OmegaUARTHandle;
 
     typedef struct
