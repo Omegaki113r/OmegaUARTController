@@ -12,7 +12,7 @@ install(
     )
 
 install(
-    FILES OmegaUARTController.h
+    FILES inc/OmegaUARTController.h
     TYPE INCLUDE
     COMPONENT tinyxml2_development
 )
