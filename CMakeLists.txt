@@ -10,3 +10,9 @@ install(
     TARGETS OmegaUARTController
     LIBRARY DESTINATION lib
     )
+
+install(
+    FILES OmegaUARTController.h
+    TYPE INCLUDE
+    COMPONENT tinyxml2_development
+)
