@@ -10,7 +10,7 @@
  * File Created: Thursday, 17th October 2024 3:33:52 pm
  * Author: Omegaki113r (omegaki113r@gmail.com)
  * -----
- * Last Modified: Friday, 18th October 2024 2:24:13 am
+ * Last Modified: Friday, 18th October 2024 2:38:01 am
  * Modified By: Omegaki113r (omegaki113r@gmail.com)
  * -----
  * Copyright 2024 - 2024 0m3g4ki113r, Xtronic
@@ -28,6 +28,7 @@ extern "C"
 {
 #endif
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -54,6 +55,11 @@ extern "C"
 
     typedef struct
     {
+        bool m_started;
+        uint32_t m_baud_rate;
+        OmegaUARTDataBits m_data_bits;
+        OmegaUARTParity m_parity;
+        OmegaUARTStopBits m_stop_bits;
         void (*read_uart)(uint8_t *, size_t, uint32_t);
     } OmegaUARTController_t;
 
