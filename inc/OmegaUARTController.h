@@ -10,7 +10,7 @@
  * File Created: Thursday, 17th October 2024 3:33:52 pm
  * Author: Omegaki113r (omegaki113r@gmail.com)
  * -----
- * Last Modified: Friday, 18th October 2024 2:38:01 am
+ * Last Modified: Monday, 21st October 2024 3:18:14 am
  * Modified By: Omegaki113r (omegaki113r@gmail.com)
  * -----
  * Copyright 2024 - 2024 0m3g4ki113r, Xtronic
@@ -38,18 +38,21 @@ extern "C"
         eDATA_BITS_6,
         eDATA_BITS_7,
         eDATA_BITS_8,
+        eDATA_BITS_MAX,
     } OmegaUARTDataBits;
     typedef enum
     {
-        eDISABLE,
-        eEVEN,
-        eODD,
+        ePARITY_DISABLE,
+        ePARITY_EVEN,
+        ePARITY_ODD,
+        ePARITY_MAX,
     } OmegaUARTParity;
     typedef enum
     {
         eSTOP_BITS_1,
         eSTOP_BITS_1_5,
         eSTOP_BITS_2,
+        eSTOP_BITS_MAX,
     } OmegaUARTStopBits;
     typedef uint64_t OmegaUARTHandle;
 
