@@ -10,7 +10,7 @@
  * File Created: Thursday, 17th October 2024 3:33:52 pm
  * Author: Omegaki113r (omegaki113r@gmail.com)
  * -----
- * Last Modified: Monday, 21st October 2024 3:18:14 am
+ * Last Modified: Monday, 21st October 2024 3:14:09 pm
  * Modified By: Omegaki113r (omegaki113r@gmail.com)
  * -----
  * Copyright 2024 - 2024 0m3g4ki113r, Xtronic
@@ -31,6 +31,8 @@ extern "C"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+
+#include "OmegaUtilityDriver.h"
 
     typedef enum
     {
@@ -63,7 +65,10 @@ extern "C"
         OmegaUARTDataBits m_data_bits;
         OmegaUARTParity m_parity;
         OmegaUARTStopBits m_stop_bits;
+        OmegaGPIO_t m_tx_pin;
+        OmegaGPIO_t m_rx_pin;
         void (*read_uart)(uint8_t *, size_t, uint32_t);
+        void (*write_uart)(uint8_t *, size_t, uint32_t);
     } OmegaUARTController_t;
 
     OmegaUARTHandle OmegaUARTController_init(OmegaUARTController_t *);
