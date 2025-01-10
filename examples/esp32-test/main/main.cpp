@@ -15,10 +15,8 @@ const Omega::UART::Handle handle = Omega::UART::init(UART_NUM_1, {GPIO_NUM_18}, 
 
 extern "C" void app_main(void)
 {
-    for (;;)
-    {
-        delay(1_s);
-    }
+    delay(10_s);
+    Omega::UART::deinit(handle);
 }
 
 void Omega::UART::on_data(const Omega::UART::Handle handle, const u8 *read_buffer, const size_t read_length)

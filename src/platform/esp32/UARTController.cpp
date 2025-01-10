@@ -10,7 +10,7 @@
  * File Created: Thursday, 17th October 2024 3:34:02 pm
  * Author: Omegaki113r (omegaki113r@gmail.com)
  * -----
- * Last Modified: Saturday, 11th January 2025 12:22:49 am
+ * Last Modified: Saturday, 11th January 2025 12:32:16 am
  * Modified By: Omegaki113r (omegaki113r@gmail.com)
  * -----
  * Copyright 2024 - 2024 0m3g4ki113r, Xtronic
@@ -284,6 +284,30 @@ namespace Omega
                 return {eFAILED};
             }
             return {eSUCCESS, write_bytes};
+        }
+
+        [[nodiscard]] OmegaStatus deinit(const Handle in_handle)
+        {
+            if (0 == in_handle)
+            {
+                LOGE("Provided handle is invalid: %lld", in_handle);
+                return {eFAILED};
+            }
+            auto iterator = s_controllers.find(in_handle);
+            if (iterator == s_controllers.end())
+            {
+                LOGE("Provided handle cannot be found");
+                return {eFAILED};
+            }
+            auto &controller = iterator->second;
+
+            vTaskDelete(controller.m_uart_event_task_handle);
+            if (ESP_OK != uart_driver_delete(controller.m_uart_port))
+            {
+                LOGE("uart_driver_delete failed");
+                return eFAILED;
+            }
+            return eSUCCESS;
         }
 
         __attribute__((weak)) void on_data(const Omega::UART::Handle, const u8 *, const size_t) {}
