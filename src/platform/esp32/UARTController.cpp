@@ -1,16 +1,16 @@
 /**
- * @file OmegaUARTController.c
+ * @file UARTController.cpp
  * @author Omegaki113r
  * @date Thursday, 17th October 2024 3:34:02 pm
  * @copyright Copyright 2024 - 2024 0m3g4ki113r, Xtronic
  * */
 /*
  * Project: OmegaUARTController
- * File Name: OmegaUARTController.c
+ * File Name: UARTController.cpp
  * File Created: Thursday, 17th October 2024 3:34:02 pm
  * Author: Omegaki113r (omegaki113r@gmail.com)
  * -----
- * Last Modified: Wednesday, 11th December 2024 9:58:46 am
+ * Last Modified: Friday, 10th January 2025 3:09:28 pm
  * Modified By: Omegaki113r (omegaki113r@gmail.com)
  * -----
  * Copyright 2024 - 2024 0m3g4ki113r, Xtronic
@@ -20,13 +20,15 @@
  * ----------	---	---------------------------------------------------------
  */
 
-#include "OmegaUARTController/OmegaUARTController.hpp"
+#include "OmegaUARTController/UARTController.hpp"
 
 namespace Omega
 {
-
-    UARTHandle UARTController_init(UARTController *controller)
+    namespace UART
     {
-        return 0;
-    }
+        UARTHandle UARTController_init(UARTController *controller)
+        {
+            return 0;
+        }
+    } // namespace UART
 } // namespace Omega
