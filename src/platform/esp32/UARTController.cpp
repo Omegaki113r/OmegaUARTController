@@ -10,7 +10,7 @@
  * File Created: Thursday, 17th October 2024 3:34:02 pm
  * Author: Omegaki113r (omegaki113r@gmail.com)
  * -----
- * Last Modified: Friday, 10th January 2025 8:40:50 pm
+ * Last Modified: Friday, 10th January 2025 11:21:00 pm
  * Modified By: Omegaki113r (omegaki113r@gmail.com)
  * -----
  * Copyright 2024 - 2024 0m3g4ki113r, Xtronic
@@ -56,11 +56,138 @@
 #define LOGE(format, ...)
 #endif
 
+internal constexpr size_t s_UART_BASE_STACK_SIZE = 256;
+#define UART_EVENT_HANDLER_STACK_SIZE (configMINIMAL_STACK_SIZE + s_UART_BASE_STACK_SIZE * 4)
+
 namespace Omega
 {
     namespace UART
     {
+        __attribute__((constructor)) void on_uart_driver_created()
+        {
+        }
+
+        struct UARTController
+        {
+            uart_port_t m_uart_port;
+            OmegaGPIO m_tx_pin;
+            OmegaGPIO m_rx_pin;
+            Baudrate m_baudrate;
+            DataBits m_databits;
+            Parity m_parity;
+            StopBits m_stopbits;
+            Handle handle;
+            OmegaGPIO rts_pin;
+            OmegaGPIO cts_pin;
+            size_t tx_buffer_size = 1024 * 2;
+            size_t rx_buffer_size = 1024 * 2;
+            bool started;
+            QueueHandle_t queue_handle;
+            size_t queue_event_count = 10;
+            TaskHandle_t m_uart_event_task_handle;
+            u8 *rx_buffer;
+            size_t (*read_uart)(uint8_t *, size_t, uint32_t);
+            size_t (*write_uart)(uint8_t *, size_t, uint32_t);
+        };
+
         internal std::unordered_map<Handle, UARTController> s_controllers;
+
+        internal inline OmegaStatus initialize_stack(UARTController &controller, const uart_config_t &in_config)
+        {
+            if (ESP_OK != uart_param_config(controller.m_uart_port, &in_config))
+            {
+                LOGE("uart_param_config failed");
+                return eFAILED;
+            }
+            if (ESP_OK != uart_set_pin(controller.m_uart_port, controller.m_tx_pin.pin, controller.m_rx_pin.pin, GPIO_NUM_NC, GPIO_NUM_NC))
+            {
+                LOGE("uart_set_pin failed");
+                return eFAILED;
+            }
+            controller.rx_buffer = static_cast<u8 *>(omega_malloc(sizeof(u8) * controller.rx_buffer_size));
+            if (nullptr == controller.rx_buffer)
+            {
+                return eFAILED;
+            }
+            if (ESP_OK != uart_driver_install(controller.m_uart_port, controller.rx_buffer_size, controller.tx_buffer_size, controller.queue_event_count, &controller.queue_handle, 0))
+            {
+                LOGE("uart_driver_install failed");
+                return eFAILED;
+            }
+
+            auto uart_event_handler = [](void *arg)
+            {
+                auto controller = static_cast<UARTController *>(arg);
+                for (;;)
+                {
+                    uart_event_t uart_event{};
+                    if (nullptr == controller->queue_handle)
+                    {
+                        delay(500_s);
+                        continue;
+                    }
+                    xQueueReceive(controller->queue_handle, &uart_event, portMAX_DELAY);
+                    switch (uart_event.type)
+                    {
+                    case UART_DATA: /*!< UART data event*/
+                    {
+                        LOGD("UART_DATA");
+                        const size_t read_bytes = uart_read_bytes(controller->m_uart_port, controller->rx_buffer, uart_event.size, portMAX_DELAY);
+                        on_UART_data(controller->handle, controller->rx_buffer, read_bytes);
+                        break;
+                    }
+                    case UART_BREAK: /*!< UART break event*/
+                    {
+                        LOGD("UART_BREAK");
+                        break;
+                    }
+                    case UART_BUFFER_FULL: /*!< UART RX buffer full event*/
+                    {
+                        LOGD("UART_BUFFER_FULL");
+                        break;
+                    }
+                    case UART_FIFO_OVF: /*!< UART FIFO overflow event*/
+                    {
+                        LOGD("UART_FIFO_OVF");
+                        break;
+                    }
+                    case UART_FRAME_ERR: /*!< UART RX frame error event*/
+                    {
+                        LOGD("UART_FRAME_ERR");
+                        break;
+                    }
+                    case UART_PARITY_ERR: /*!< UART RX parity event*/
+                    {
+                        LOGD("UART_PARITY_ERR");
+                        break;
+                    }
+                    case UART_DATA_BREAK: /*!< UART TX data and break event*/
+                    {
+                        LOGD("UART_DATA_BREAK");
+                        break;
+                    }
+                    case UART_PATTERN_DET: /*!< UART pattern detected */
+                    {
+                        LOGD("UART_PATTERN_DET");
+                        break;
+                    }
+                    default:
+                    {
+                        LOGE("Unhandled UART event");
+                        break;
+                    }
+                    }
+                }
+                vTaskDelete(NULL);
+            };
+            if (pdPASS != xTaskCreate(uart_event_handler, "user_event_handler", UART_EVENT_HANDLER_STACK_SIZE, &controller, configMAX_PRIORITIES - 5, &controller.m_uart_event_task_handle))
+            {
+                LOGE("xTaskCreate(uart_event_handler) failed");
+                return eFAILED;
+            }
+            controller.started = true;
+            return eSUCCESS;
+        }
 
         Handle init(uart_port_t in_port, OmegaGPIO in_tx, OmegaGPIO in_rx, Baudrate in_baudrate, DataBits in_databits, Parity in_parity, StopBits in_stopbits)
         {
@@ -99,93 +226,66 @@ namespace Omega
                 return 0;
             }
             s_controllers[handle] = {in_port, in_tx, in_rx, in_baudrate, in_databits, in_parity, in_stopbits, handle};
-
             const uart_config_t uart_config = {static_cast<int>(in_baudrate), static_cast<uart_word_length_t>(in_databits), static_cast<uart_parity_t>(in_parity), static_cast<uart_stop_bits_t>(in_stopbits)};
-            if (ESP_OK != uart_param_config(in_port, &uart_config))
+            if (eSUCCESS != initialize_stack(s_controllers[handle], uart_config))
             {
-                LOGE("uart_param_config failed");
+                LOGE("initialize_stack failed");
                 return 0;
             }
-            if (ESP_OK != uart_set_pin(in_port, tx, rx, GPIO_NUM_NC, GPIO_NUM_NC))
-            {
-                LOGE("uart_set_pin failed");
-                return 0;
-            }
-            // if (ESP_OK != uart_driver_install(in_port, s_controllers[handle].rx_buffer_size, s_controllers[handle].tx_buffer_size, 10, &s_controllers[handle].queue_handle, 0))
-            // {
-            //     LOGE("uart_driver_install failed");
-            //     return 0;
-            // }
             return handle;
         }
 
-        OmegaStatus read(Handle in_handle, u8 *out_buffer, size_t *in_out_read_bytes, const u32 in_timeout_ms)
+        Response read(Handle in_handle, u8 *out_buffer, const size_t in_read_bytes, const u32 in_timeout_ms)
         {
             if (0 == in_handle)
             {
                 LOGE("Provided handle is invalid: %lld", in_handle);
-                return eFAILED;
+                return {eFAILED};
             }
-            if (nullptr == out_buffer || nullptr == in_out_read_bytes || 0 == *in_out_read_bytes)
+            if (nullptr == out_buffer || 0 == in_read_bytes)
             {
                 LOGE("provided buffer is invalid");
-                return eFAILED;
+                return {eFAILED};
             }
             auto iterator = s_controllers.find(in_handle);
             if (iterator == s_controllers.end())
             {
                 LOGE("Provided handle cannot be found");
-                return eFAILED;
+                return {eFAILED};
             }
             auto &controller = iterator->second;
-            if (!controller.started)
-            {
-                if (ESP_OK != uart_driver_install(controller.m_uart_port, controller.rx_buffer_size, controller.tx_buffer_size, controller.queue_event_count, &controller.queue_handle, 0))
-                {
-                    LOGE("uart_driver_install failed");
-                    return eFAILED;
-                }
-                controller.started = true;
-            }
-            *in_out_read_bytes = uart_read_bytes(controller.m_uart_port, out_buffer, *in_out_read_bytes, pdMS_TO_TICKS(in_timeout_ms));
-            return eSUCCESS;
+            const size_t read_bytes = uart_read_bytes(controller.m_uart_port, out_buffer, in_read_bytes, pdMS_TO_TICKS(in_timeout_ms));
+            return {eSUCCESS, read_bytes};
         }
 
-        OmegaStatus write(Handle in_handle, const u8 *in_buffer, size_t *in_out_write_bytes, u32 in_timeout_ms)
+        Response write(Handle in_handle, const u8 *in_buffer, const size_t in_write_bytes, u32 in_timeout_ms)
         {
             if (0 == in_handle)
             {
                 LOGE("Provided handle is invalid: %lld", in_handle);
-                return eFAILED;
+                return {eFAILED};
             }
-            if (nullptr == in_buffer || nullptr == in_out_write_bytes || 0 == *in_out_write_bytes)
+            if (nullptr == in_buffer || 0 == in_write_bytes)
             {
                 LOGE("provided buffer is invalid");
-                return eFAILED;
+                return {eFAILED};
             }
             auto iterator = s_controllers.find(in_handle);
             if (iterator == s_controllers.end())
             {
                 LOGE("Provided handle cannot be found");
-                return eFAILED;
+                return {eFAILED};
             }
             auto &controller = iterator->second;
-            if (!controller.started)
-            {
-                if (ESP_OK != uart_driver_install(controller.m_uart_port, controller.rx_buffer_size, controller.tx_buffer_size, controller.queue_event_count, &controller.queue_handle, 0))
-                {
-                    LOGE("uart_driver_install failed");
-                    return eFAILED;
-                }
-                controller.started = true;
-            }
-            *in_out_write_bytes = uart_write_bytes(controller.m_uart_port, in_buffer, *in_out_write_bytes);
+            const size_t write_bytes = uart_write_bytes(controller.m_uart_port, in_buffer, in_write_bytes);
             if (ESP_OK != uart_wait_tx_done(controller.m_uart_port, in_timeout_ms))
             {
                 LOGD("uart_wait_tx_done failed");
-                return eFAILED;
+                return {eFAILED};
             }
-            return eSUCCESS;
+            return {eSUCCESS, write_bytes};
         }
     } // namespace UART
 } // namespace Omega
+
+__attribute__((weak)) void on_UART_data(const Omega::UART::Handle, const u8 *, const size_t) {}

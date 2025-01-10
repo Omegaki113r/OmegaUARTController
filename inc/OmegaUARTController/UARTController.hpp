@@ -10,7 +10,7 @@
  * File Created: Thursday, 17th October 2024 3:33:52 pm
  * Author: Omegaki113r (omegaki113r@gmail.com)
  * -----
- * Last Modified: Friday, 10th January 2025 8:35:49 pm
+ * Last Modified: Friday, 10th January 2025 10:56:29 pm
  * Modified By: Omegaki113r (omegaki113r@gmail.com)
  * -----
  * Copyright 2024 - 2024 0m3g4ki113r, Xtronic
@@ -59,29 +59,16 @@ namespace Omega
         typedef u64 Handle;
         typedef u32 Baudrate;
 
-        struct UARTController
+        struct Response
         {
-            uart_port_t m_uart_port;
-            OmegaGPIO m_tx_pin;
-            OmegaGPIO m_rx_pin;
-            Baudrate m_baudrate;
-            DataBits m_databits;
-            Parity m_parity;
-            StopBits m_stopbits;
-            Handle handle;
-            OmegaGPIO rts_pin;
-            OmegaGPIO cts_pin;
-            size_t tx_buffer_size = 1024 * 2;
-            size_t rx_buffer_size = 1024 * 2;
-            bool started;
-            QueueHandle_t queue_handle;
-            size_t queue_event_count = 10;
-            size_t (*read_uart)(uint8_t *, size_t, uint32_t);
-            size_t (*write_uart)(uint8_t *, size_t, uint32_t);
+            OmegaStatus status;
+            size_t size;
         };
 
         [[nodiscard]] Handle init(uart_port_t in_port, OmegaGPIO in_tx, OmegaGPIO in_rx, Baudrate in_baudrate = 115200, DataBits in_databits = DataBits::eDATA_BITS_8, Parity in_parity = Parity::ePARITY_DISABLE, StopBits in_stopbits = StopBits::eSTOP_BITS_1);
-        [[nodiscard]] OmegaStatus read(Handle in_handle, u8 *out_buffer, size_t *in_out_read_bytes, u32 in_timeout_ms);
-        [[nodiscard]] OmegaStatus write(Handle in_handle, const u8 *in_buffer, size_t *in_out_write_bytes, u32 in_timeout_ms);
+        [[nodiscard]] Response read(Handle in_handle, u8 *out_buffer, const size_t in_read_bytes, u32 in_timeout_ms);
+        [[nodiscard]] Response write(Handle in_handle, const u8 *in_buffer, const size_t in_write_bytes, u32 in_timeout_ms);
     } // namespace UART
 } // namespace Omega
+
+__attribute__((weak)) void on_UART_data(const Omega::UART::Handle, const u8 *, const size_t);
