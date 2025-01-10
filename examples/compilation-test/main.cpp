@@ -21,10 +21,11 @@
  */
 #include <stdio.h>
 
-#include <OmegaUARTController.h>
+#include <OmegaUARTController.hpp>
 
 OmegaUARTHandle handle = 1000;
 
 void main() {
+	OmegaUARTController_init(nullptr);
 	printf("hello world %lld\n",handle);
 }

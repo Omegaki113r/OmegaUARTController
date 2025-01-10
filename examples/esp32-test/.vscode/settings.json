@@ -1,0 +1,9 @@
+{
+  "C_Cpp.intelliSenseEngine": "default",
+  "idf.openOcdConfigs": [
+    "interface/ftdi/esp32_devkitj_v1.cfg",
+    "target/esp32.cfg"
+  ],
+  "idf.espIdfPathWin": "c:\\dev\\esp\\esp_idf_versions\\v5.3\\esp-idf",
+  "idf.toolsPathWin": "c:\\Users\\om3gaki113r\\.espressif\\tools"
+}
