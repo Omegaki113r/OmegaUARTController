@@ -20,15 +20,104 @@
  * ----------	---	---------------------------------------------------------
  */
 
+#include <unordered_map>
+
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+
+#include <driver/gpio.h>
+#include <esp_err.h>
+
+#include <sdkconfig.h>
+
 #include "OmegaUARTController/UARTController.hpp"
+
+#if CONFIG_OMEGA_UART_CONTROLLER_DEBUG
+#define LOGD(format, ...) OMEGA_LOGD(format, ##__VA_ARGS__)
+#else
+#define LOGD(format, ...)
+#endif
+
+#if CONFIG_OMEGA_UART_CONTROLLER_INFO
+#define LOGI(format, ...) OMEGA_LOGI(format, ##__VA_ARGS__)
+#else
+#define LOGI(format, ...)
+#endif
+
+#if CONFIG_OMEGA_UART_CONTROLLER_WARN
+#define LOGW(format, ...) OMEGA_LOGW(format, ##__VA_ARGS__)
+#else
+#define LOGW(format, ...)
+#endif
+
+#if CONFIG_OMEGA_UART_CONTROLLER_ERROR
+#define LOGE(format, ...) OMEGA_LOGE(format, ##__VA_ARGS__)
+#else
+#define LOGE(format, ...)
+#endif
 
 namespace Omega
 {
     namespace UART
     {
-        UARTHandle UARTController_init(UARTController *controller)
+        internal std::unordered_map<Handle, UARTController> s_controllers;
+
+        Handle init(uart_port_t in_port, OmegaGPIO in_tx, OmegaGPIO in_rx, Baudrate in_baudrate, DataBits in_databits, Parity in_parity, StopBits in_stopbits)
         {
+            if (UART_NUM_MAX <= in_port)
+            {
+                LOGE("Invalid UART port");
+                return 0;
+            }
+            if (0 >= in_baudrate)
+            {
+                LOGE("Invalid baudrate: %ld", in_baudrate);
+                return 0;
+            }
+            const auto tx = static_cast<gpio_num_t>(in_tx.pin);
+            const auto rx = static_cast<gpio_num_t>(in_rx.pin);
+            if (GPIO_NUM_MAX <= tx || GPIO_NUM_MAX <= rx)
+            {
+                LOGE("Invalid GPIOs provided. TX: %d, RX: %d", tx, rx);
+                return 0;
+            }
+            for (const auto &[handle, controller] : s_controllers)
+            {
+                if (in_port == controller.m_uart_port || in_tx == controller.m_tx_pin || in_rx == controller.m_rx_pin)
+                {
+                    LOGE("UART controller is already initialized with given parameters");
+                    LOGE("Found=> Handle: %lld PortNumber:%d TX:%ld RX:%ld", controller.handle, static_cast<int>(controller.m_uart_port), static_cast<u32>(controller.m_tx_pin.pin), static_cast<u32>(controller.m_rx_pin.pin));
+                    LOGE("Provided=> PortNumber:%d TX:%d RX:%d", in_port, tx, rx);
+                    return 0;
+                }
+            }
+
+            const auto handle = OmegaUtilityDriver_generate_handle();
+            if (0 == handle)
+        {
+                LOGE("Handle creation failed");
+                return 0;
+            }
+            s_controllers[handle] = {in_port, in_tx, in_rx, in_baudrate, in_databits, in_parity, in_stopbits, handle};
+
+            const uart_config_t uart_config = {static_cast<int>(in_baudrate), static_cast<uart_word_length_t>(in_databits), static_cast<uart_parity_t>(in_parity), static_cast<uart_stop_bits_t>(in_stopbits)};
+            if (ESP_OK != uart_param_config(in_port, &uart_config))
+            {
+                LOGE("uart_param_config failed");
+                return 0;
+            }
+            if (ESP_OK != uart_set_pin(in_port, tx, rx, GPIO_NUM_NC, GPIO_NUM_NC))
+            {
+                LOGE("uart_set_pin failed");
             return 0;
+            }
+            // if (ESP_OK != uart_driver_install(in_port, s_controllers[handle].rx_buffer_size, s_controllers[handle].tx_buffer_size, 10, &s_controllers[handle].queue_handle, 0))
+            // {
+            //     LOGE("uart_driver_install failed");
+            //     return 0;
+            // }
+            return handle;
+        }
         }
     } // namespace UART
 } // namespace Omega
