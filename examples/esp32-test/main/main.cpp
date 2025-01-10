@@ -23,4 +23,5 @@ extern "C" void app_main(void)
     {
         return;
     }
+        Omega::UART::read(handle, reinterpret_cast<u8 *>(hello_world), &read_amount, 1000);
 }

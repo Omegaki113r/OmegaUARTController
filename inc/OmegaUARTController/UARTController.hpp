@@ -81,5 +81,6 @@ namespace Omega
         };
 
         [[nodiscard]] Handle init(uart_port_t in_port, OmegaGPIO in_tx, OmegaGPIO in_rx, Baudrate in_baudrate = 115200, DataBits in_databits = DataBits::eDATA_BITS_8, Parity in_parity = Parity::ePARITY_DISABLE, StopBits in_stopbits = StopBits::eSTOP_BITS_1);
+        [[nodiscard]] OmegaStatus read(Handle in_handle, u8 *out_buffer, size_t *in_out_read_bytes, u32 in_timeout_ms);
     } // namespace UART
 } // namespace Omega

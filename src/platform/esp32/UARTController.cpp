@@ -118,6 +118,38 @@ namespace Omega
             // }
             return handle;
         }
+
+        OmegaStatus read(Handle in_handle, u8 *out_buffer, size_t *in_out_read_bytes, const u32 in_timeout_ms)
+        {
+            if (0 == in_handle)
+            {
+                LOGE("Provided handle is invalid: %lld", in_handle);
+                return eFAILED;
+            }
+            if (nullptr == out_buffer || nullptr == in_out_read_bytes || 0 == *in_out_read_bytes)
+            {
+                LOGE("provided buffer is invalid");
+                return eFAILED;
+            }
+            auto iterator = s_controllers.find(in_handle);
+            if (iterator == s_controllers.end())
+            {
+                LOGE("Provided handle cannot be found");
+                return eFAILED;
+            }
+            auto &controller = iterator->second;
+            if (!controller.started)
+            {
+                if (ESP_OK != uart_driver_install(controller.m_uart_port, controller.rx_buffer_size, controller.tx_buffer_size, controller.queue_event_count, &controller.queue_handle, 0))
+                {
+                    LOGE("uart_driver_install failed");
+                    return eFAILED;
+                }
+                controller.started = true;
+            }
+            *in_out_read_bytes = uart_read_bytes(controller.m_uart_port, out_buffer, *in_out_read_bytes, pdMS_TO_TICKS(in_timeout_ms));
+            return eSUCCESS;
+        }
         }
     } // namespace UART
 } // namespace Omega
