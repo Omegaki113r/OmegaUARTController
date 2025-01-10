@@ -10,7 +10,7 @@
  * File Created: Thursday, 17th October 2024 3:33:52 pm
  * Author: Omegaki113r (omegaki113r@gmail.com)
  * -----
- * Last Modified: Friday, 10th January 2025 3:09:09 pm
+ * Last Modified: Friday, 10th January 2025 8:35:49 pm
  * Modified By: Omegaki113r (omegaki113r@gmail.com)
  * -----
  * Copyright 2024 - 2024 0m3g4ki113r, Xtronic
@@ -82,5 +82,6 @@ namespace Omega
 
         [[nodiscard]] Handle init(uart_port_t in_port, OmegaGPIO in_tx, OmegaGPIO in_rx, Baudrate in_baudrate = 115200, DataBits in_databits = DataBits::eDATA_BITS_8, Parity in_parity = Parity::ePARITY_DISABLE, StopBits in_stopbits = StopBits::eSTOP_BITS_1);
         [[nodiscard]] OmegaStatus read(Handle in_handle, u8 *out_buffer, size_t *in_out_read_bytes, u32 in_timeout_ms);
+        [[nodiscard]] OmegaStatus write(Handle in_handle, const u8 *in_buffer, size_t *in_out_write_bytes, u32 in_timeout_ms);
     } // namespace UART
 } // namespace Omega

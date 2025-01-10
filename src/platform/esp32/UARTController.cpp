@@ -10,7 +10,7 @@
  * File Created: Thursday, 17th October 2024 3:34:02 pm
  * Author: Omegaki113r (omegaki113r@gmail.com)
  * -----
- * Last Modified: Friday, 10th January 2025 3:09:28 pm
+ * Last Modified: Friday, 10th January 2025 8:40:50 pm
  * Modified By: Omegaki113r (omegaki113r@gmail.com)
  * -----
  * Copyright 2024 - 2024 0m3g4ki113r, Xtronic
@@ -94,7 +94,7 @@ namespace Omega
 
             const auto handle = OmegaUtilityDriver_generate_handle();
             if (0 == handle)
-        {
+            {
                 LOGE("Handle creation failed");
                 return 0;
             }
@@ -109,7 +109,7 @@ namespace Omega
             if (ESP_OK != uart_set_pin(in_port, tx, rx, GPIO_NUM_NC, GPIO_NUM_NC))
             {
                 LOGE("uart_set_pin failed");
-            return 0;
+                return 0;
             }
             // if (ESP_OK != uart_driver_install(in_port, s_controllers[handle].rx_buffer_size, s_controllers[handle].tx_buffer_size, 10, &s_controllers[handle].queue_handle, 0))
             // {
@@ -150,6 +150,42 @@ namespace Omega
             *in_out_read_bytes = uart_read_bytes(controller.m_uart_port, out_buffer, *in_out_read_bytes, pdMS_TO_TICKS(in_timeout_ms));
             return eSUCCESS;
         }
+
+        OmegaStatus write(Handle in_handle, const u8 *in_buffer, size_t *in_out_write_bytes, u32 in_timeout_ms)
+        {
+            if (0 == in_handle)
+            {
+                LOGE("Provided handle is invalid: %lld", in_handle);
+                return eFAILED;
+            }
+            if (nullptr == in_buffer || nullptr == in_out_write_bytes || 0 == *in_out_write_bytes)
+            {
+                LOGE("provided buffer is invalid");
+                return eFAILED;
+            }
+            auto iterator = s_controllers.find(in_handle);
+            if (iterator == s_controllers.end())
+            {
+                LOGE("Provided handle cannot be found");
+                return eFAILED;
+            }
+            auto &controller = iterator->second;
+            if (!controller.started)
+            {
+                if (ESP_OK != uart_driver_install(controller.m_uart_port, controller.rx_buffer_size, controller.tx_buffer_size, controller.queue_event_count, &controller.queue_handle, 0))
+                {
+                    LOGE("uart_driver_install failed");
+                    return eFAILED;
+                }
+                controller.started = true;
+            }
+            *in_out_write_bytes = uart_write_bytes(controller.m_uart_port, in_buffer, *in_out_write_bytes);
+            if (ESP_OK != uart_wait_tx_done(controller.m_uart_port, in_timeout_ms))
+            {
+                LOGD("uart_wait_tx_done failed");
+                return eFAILED;
+            }
+            return eSUCCESS;
         }
     } // namespace UART
 } // namespace Omega
