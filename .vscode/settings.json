@@ -8,5 +8,8 @@
             "projectCreationYear",
             "2024"
         ]
-    ]
+    ],
+    "files.associations": {
+        "unordered_map": "cpp"
+    }
 }

@@ -6,6 +6,8 @@ cmake_minimum_required(VERSION 3.16)
 
 set( EXTRA_COMPONENT_DIRS ../..)
 
+add_compile_definitions(CONFIG_OMEGA_LOGGING=1)
+
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(esp32-test C CXX)
 

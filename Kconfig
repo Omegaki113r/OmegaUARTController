@@ -1,0 +1,27 @@
+menu "OmegaUARTController Configuration"
+    config OMEGA_UART_CONTROLLER_DEBUG
+        bool "Enable UART Controller Debug logs"
+        default "n"
+        help
+            This is used to enable or disable debug logs
+    config OMEGA_UART_CONTROLLER_INFO
+        bool "Enable UART Controller Info logs"
+        default "n"
+        help
+            This is used to enable or disable info logs
+    config OMEGA_UART_CONTROLLER_WARN
+        bool "Enable UART Controller Warn logs"
+        default "n"
+        help
+            This is used to enable or disable warn logs
+    config OMEGA_UART_CONTROLLER_ERROR
+        bool "Enable UART Controller Error logs"
+        default "n"
+        help
+            This is used to enable or disable error logs
+    config OMEGA_UART_CONTROLLER_PROFILE
+        bool "Enable UART Controller Profiling"
+        default "n"
+        help
+            This is used to enable or disable profiling
+endmenu
