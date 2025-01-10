@@ -21,7 +21,7 @@ extern "C" void app_main(void)
     }
 }
 
-void on_UART_data(const Omega::UART::Handle handle, const u8 *read_buffer, const size_t read_length)
+void Omega::UART::on_data(const Omega::UART::Handle handle, const u8 *read_buffer, const size_t read_length)
 {
     OMEGA_LOGD("Handle: %lld", handle);
     OMEGA_HEX_LOGD((u8 *)read_buffer, read_length);

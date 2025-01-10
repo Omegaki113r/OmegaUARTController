@@ -10,7 +10,7 @@
  * File Created: Thursday, 17th October 2024 3:34:02 pm
  * Author: Omegaki113r (omegaki113r@gmail.com)
  * -----
- * Last Modified: Friday, 10th January 2025 11:21:00 pm
+ * Last Modified: Saturday, 11th January 2025 12:22:49 am
  * Modified By: Omegaki113r (omegaki113r@gmail.com)
  * -----
  * Copyright 2024 - 2024 0m3g4ki113r, Xtronic
@@ -133,7 +133,7 @@ namespace Omega
                     {
                         LOGD("UART_DATA");
                         const size_t read_bytes = uart_read_bytes(controller->m_uart_port, controller->rx_buffer, uart_event.size, portMAX_DELAY);
-                        on_UART_data(controller->handle, controller->rx_buffer, read_bytes);
+                        on_data(controller->handle, controller->rx_buffer, read_bytes);
                         break;
                     }
                     case UART_BREAK: /*!< UART break event*/
@@ -285,7 +285,7 @@ namespace Omega
             }
             return {eSUCCESS, write_bytes};
         }
+
+        __attribute__((weak)) void on_data(const Omega::UART::Handle, const u8 *, const size_t) {}
     } // namespace UART
 } // namespace Omega
-
-__attribute__((weak)) void on_UART_data(const Omega::UART::Handle, const u8 *, const size_t) {}
