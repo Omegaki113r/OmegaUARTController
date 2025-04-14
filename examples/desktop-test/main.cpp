@@ -24,7 +24,15 @@
 #include "OmegaUARTController/UARTController.hpp"
 #include "OmegaUtilityDriver/UtilityDriver.hpp"
 
-void main() {
+void main() 
+{
+
+	const auto ports = ::Omega::UART::omega_get_available_ports();
+	for (const auto& port : ports)
+	{
+		OMEGA_LOGD("%s || %s", port.m_friendly_portname, port.m_port_name);
+	}
+
 	const auto handle = ::Omega::UART::init("COM8");
 
 	const auto read_callback = [](const ::Omega::UART::Handle handle, const u8* data, const size_t data_length) {

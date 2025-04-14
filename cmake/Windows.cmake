@@ -15,7 +15,7 @@ FetchContent_MakeAvailable(OmegaUtilityDriver)
 add_library(OmegaUARTController STATIC ${PROJ_ROOT_DIR}/src/platform/windows/UARTController.cpp)
 target_include_directories(OmegaUARTController PUBLIC ${PROJ_ROOT_DIR}/inc)
 target_link_libraries(OmegaUARTController PUBLIC 
-    OmegaUtilityDriver Threads::Threads
+    OmegaUtilityDriver Threads::Threads setupapi
 )
 target_compile_definitions(OmegaUARTController PUBLIC 
     CONFIG_OMEGA_LOGGING=1

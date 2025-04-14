@@ -27,17 +27,26 @@
 
 #include <windows.h>
 
+#include <setupapi.h>
+#include <cfgmgr32.h>
+#include <tchar.h>
+
+#include <initguid.h>
+
 #include "OmegaUARTController/UARTController.hpp"
 #include "OmegaUtilityDriver/UtilityDriver.hpp"
+
 
 namespace Omega
 {
 	namespace UART
 	{
+		DEFINE_GUID(GUID_DEVINTERFACE_COMPORT, 0x86E0D1E0, 0x8089, 0x11D0, 0x9C, 0xE4, 0x08, 0x00, 0x3E, 0x30, 0x1F, 0x73);
+
 		struct UARTPort
 		{
 			HANDLE m_handle;
-			char port_name[100]{0};
+			char m_port_name[PORT_NAME_SIZE + 1]{0};
 			Baudrate m_baudrate{115200};
 			DataBits m_databits{DataBits::eDATA_BITS_8};
 			StopBits m_stopbits{StopBits::eSTOP_BITS_1};
@@ -65,7 +74,7 @@ namespace Omega
 				.m_stopbits = in_stopbits,
 				.m_parity = in_parity,
 			};
-			UNUSED(std::strncpy(serial_port.port_name, in_port, sizeof(serial_port.port_name)));
+			UNUSED(std::strncpy(serial_port.m_port_name, in_port, PORT_NAME_SIZE));
 			UNUSED(s_com_ports.insert({user_serial_handle, serial_port}));
 
 			DCB dcb_parameters{};
@@ -187,6 +196,67 @@ namespace Omega
 				return eSUCCESS;
 			}
 			return eFAILED;
+		}
+
+		std::vector<EnumeratedUARTPort> omega_get_available_ports()
+		{
+			std::vector<EnumeratedUARTPort> enumerated_ports;
+			enumerated_ports.reserve(10);
+
+			// Get device information set for COM ports
+			HDEVINFO hDevInfo = SetupDiGetClassDevs(&GUID_DEVINTERFACE_COMPORT, NULL, NULL, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
+			if (hDevInfo == INVALID_HANDLE_VALUE)
+			{
+				OMEGA_LOGE("Error: Unable to get device info set (%lu)", GetLastError());
+				return enumerated_ports;
+			}
+
+			SP_DEVINFO_DATA devInfoData = {sizeof(SP_DEVINFO_DATA)};
+			DWORD index = 0;
+
+			// Enumerate all COM port devices
+			while (SetupDiEnumDeviceInfo(hDevInfo, index, &devInfoData))
+			{
+				TCHAR friendlyName[256] = {0};
+				TCHAR portName[32] = {0};
+				DWORD size = 0;
+
+				// Get friendly name (e.g., "Communications Port (COM1)")
+				if (SetupDiGetDeviceRegistryProperty(hDevInfo, &devInfoData, SPDRP_FRIENDLYNAME, NULL, (PBYTE)friendlyName, sizeof(friendlyName), &size))
+				{
+					// Get port name from registry
+					HKEY hKey = SetupDiOpenDevRegKey(hDevInfo, &devInfoData, DICS_FLAG_GLOBAL, 0, DIREG_DEV, KEY_READ);
+					if (hKey != INVALID_HANDLE_VALUE)
+					{
+						size = sizeof(portName);
+						DWORD type = 0;
+						if (RegQueryValueEx(hKey, _T("PortName"), NULL, &type, (LPBYTE)portName, &size) == ERROR_SUCCESS)
+						{
+							//_tprintf(_T("%s (%s)\n"), friendlyName, portName);
+							EnumeratedUARTPort port{};
+							UNUSED(std::strncpy(port.m_friendly_portname, friendlyName, FRIENDLY_PORT_NAME_SIZE));
+							UNUSED(std::strncpy(port.m_port_name, portName, PORT_NAME_SIZE));
+							enumerated_ports.push_back(port);
+						}
+						RegCloseKey(hKey);
+					}
+					else
+					{
+						_tprintf(_T("%s (Port name unavailable)\n"), friendlyName);
+					}
+				}
+
+				index++;
+			}
+
+			if (GetLastError() != ERROR_NO_MORE_ITEMS)
+			{
+				OMEGA_LOGE("Error enumerating devices (%lu)", GetLastError());
+			}
+
+			// Clean up
+			SetupDiDestroyDeviceInfoList(hDevInfo);
+			return enumerated_ports;
 		}
 	}
 }
