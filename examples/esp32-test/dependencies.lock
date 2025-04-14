@@ -1,16 +1,21 @@
 dependencies:
   OmegaUtilityDriver:
     component_hash: b4ac0c0888736a874ef64198ef723d3508921ff281120a1dedd4be391387d313
+    dependencies:
+    - name: idf
+      version: '>=4.1.0'
     source:
       git: https://github.com/Omegaki113r/OmegaUtilityDriver.git
       path: .
       type: git
     version: c33268af7a321dd76b8f922ee41ff98a011f5ede
   idf:
-    component_hash: null
     source:
       type: idf
-    version: 5.3.0
-manifest_hash: 270cc735c62a822e3f42d50dde57975f1e80b8238fd2a6aedf718d9b219910cc
+    version: 5.4.0
+direct_dependencies:
+- OmegaUtilityDriver
+- idf
+manifest_hash: 9b412e769d477805fb9a10f7a813f080a6974f9ceecd1cd2c1191d0134bbcca7
 target: esp32s3
-version: 1.0.0
+version: 2.0.0

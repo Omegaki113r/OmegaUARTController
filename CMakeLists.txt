@@ -1,14 +1,23 @@
+cmake_minimum_required(VERSION 3.25)
+
+
+
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(PROJ_ROOT_DIR ${CMAKE_CURRENT_LIST_DIR})
+
 
 if(ESP_PLATFORM)
-    set(PROJ_SOURCES src/platform/esp32/UARTController.cpp)
-    idf_component_register(
-            INCLUDE_DIRS inc
-            SRCS ${PROJ_SOURCES}
-            REQUIRES driver OmegaUtilityDriver)
-
+    include(${CMAKE_CURRENT_LIST_DIR}/cmake/ESP32xx.cmake)
 else()
-    message(FATAL_ERROR "Platform not defined")
-    cmake_minimum_required(VERSION 3.6)
-    project(OmegaUARTController)
-
+    if(WIN32)
+        include(${CMAKE_CURRENT_LIST_DIR}/cmake/Windows.cmake)
+    elseif(APPLE)
+        include(${CMAKE_CURRENT_LIST_DIR}/cmake/Apple.cmake)
+    elseif(LINUX)
+        message("Error")
+    else()
+        message("Error")
+    endif()
 endif()
