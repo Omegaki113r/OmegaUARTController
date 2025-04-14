@@ -130,7 +130,6 @@ namespace Omega
 					}
 				};
 				uart_port.m_uart_read_thread = new std::thread{uart_read_thread, uart_port};
-				uart_port.m_uart_read_thread->join();
 				return eSUCCESS;
 			}
 			return eFAILED;
