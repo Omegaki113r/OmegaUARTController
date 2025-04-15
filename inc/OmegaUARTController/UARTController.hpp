@@ -10,7 +10,7 @@
  * File Created: Thursday, 17th October 2024 3:33:52 pm
  * Author: Omegaki113r (omegaki113r@gmail.com)
  * -----
- * Last Modified: Tuesday, 15th April 2025 12:23:22 pm
+ * Last Modified: Tuesday, 15th April 2025 12:36:46 pm
  * Modified By: Omegaki113r (omegaki113r@gmail.com)
  * -----
  * Copyright 2024 - 2024 0m3g4ki113r, Xtronic
@@ -65,21 +65,18 @@ namespace Omega
             eDATA_BITS_6 = UART_DATA_6_BITS,
             eDATA_BITS_7 = UART_DATA_7_BITS,
             eDATA_BITS_8 = UART_DATA_8_BITS,
-            eDATA_BITS_MAX,
         };
         enum class Parity
         {
             ePARITY_DISABLE = UART_PARITY_DISABLE,
             ePARITY_ODD = UART_PARITY_ODD,
             ePARITY_EVEN = UART_PARITY_EVEN,
-            ePARITY_MAX,
         };
         enum class StopBits
         {
             eSTOP_BITS_1 = UART_STOP_BITS_1,
             eSTOP_BITS_1_5 = UART_STOP_BITS_1_5,
             eSTOP_BITS_2 = UART_STOP_BITS_2,
-            eSTOP_BITS_MAX,
         };
 
         typedef u64 Handle;
