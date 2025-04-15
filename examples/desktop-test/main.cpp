@@ -34,6 +34,17 @@ void main()
 	}
 
 	const auto handle = ::Omega::UART::init("COM8");
+	if (0 == handle)
+	{
+		OMEGA_LOGE("invalid handle");
+		return;
+	}
+	const auto handle1 = ::Omega::UART::init("COM8");
+	if (0 == handle1)
+	{
+		OMEGA_LOGE("invalid handle");
+		return;
+	}
 
 	const auto read_callback = [](const ::Omega::UART::Handle handle, const u8* data, const size_t data_length) {
 		OMEGA_HEX_LOGD((void*)data, data_length);
