@@ -64,7 +64,7 @@ namespace Omega
 			if (serial_handle = CreateFile(in_port, GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr); INVALID_HANDLE_VALUE == serial_handle)
 			{
 				OMEGA_LOGE("Opening Serialport failed. Reason: %s", ERROR_FILE_NOT_FOUND == GetLastError() ? "COMPORT NOT FOUND" : "OPENING COMPORT FAILED");
-				return user_serial_handle;
+				return 0;
 			}
 			user_serial_handle++;
 			UARTPort serial_port{
@@ -82,7 +82,7 @@ namespace Omega
 			{
 				OMEGA_LOGE("Retrieving COMPORT state failed");
 				deinit(user_serial_handle);
-				return user_serial_handle;
+				return 0;
 			}
 			dcb_parameters.BaudRate = in_baudrate;
 			dcb_parameters.ByteSize = static_cast<BYTE>(in_databits);
@@ -92,7 +92,7 @@ namespace Omega
 			{
 				OMEGA_LOGE("Setting COMPORT state failed");
 				deinit(user_serial_handle);
-				return user_serial_handle;
+				return 0;
 			}
 			COMMTIMEOUTS timeout_parameters{};
 			timeout_parameters.ReadIntervalTimeout = 50;
@@ -104,7 +104,7 @@ namespace Omega
 			{
 				OMEGA_LOGE("Setting timeouts failed");
 				deinit(user_serial_handle);
-				return eFAILED;
+				return 0;
 			}
 			return user_serial_handle;
 		}
