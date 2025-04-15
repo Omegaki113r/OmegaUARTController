@@ -10,7 +10,7 @@
  * File Created: Thursday, 17th October 2024 3:33:52 pm
  * Author: Omegaki113r (omegaki113r@gmail.com)
  * -----
- * Last Modified: Monday, 14th April 2025 7:01:54 am
+ * Last Modified: Tuesday, 15th April 2025 12:13:03 pm
  * Modified By: Omegaki113r (omegaki113r@gmail.com)
  * -----
  * Copyright 2024 - 2024 0m3g4ki113r, Xtronic
@@ -50,13 +50,13 @@ namespace Omega
 {
     namespace UART
     {
-        constexpr size_t FRIENDLY_PORT_NAME_SIZE{ 256 };
-        constexpr size_t PORT_NAME_SIZE{ 32 };
+        constexpr size_t FRIENDLY_PORT_NAME_SIZE{256};
+        constexpr size_t PORT_NAME_SIZE{32};
 
         struct EnumeratedUARTPort
         {
-            char m_friendly_portname[FRIENDLY_PORT_NAME_SIZE + 1]{ 0 };
-            char m_port_name[PORT_NAME_SIZE + 1]{ 0 };
+            char m_friendly_portname[FRIENDLY_PORT_NAME_SIZE + 1]{0};
+            char m_port_name[PORT_NAME_SIZE + 1]{0};
         };
 
         enum class DataBits
@@ -65,18 +65,21 @@ namespace Omega
             eDATA_BITS_6 = UART_DATA_6_BITS,
             eDATA_BITS_7 = UART_DATA_7_BITS,
             eDATA_BITS_8 = UART_DATA_8_BITS,
+            eDATA_BITS_MAX,
         };
         enum class Parity
         {
             ePARITY_DISABLE = UART_PARITY_DISABLE,
             ePARITY_EVEN = UART_PARITY_EVEN,
             ePARITY_ODD = UART_PARITY_ODD,
+            ePARITY_MAX,
         };
         enum class StopBits
         {
             eSTOP_BITS_1 = UART_STOP_BITS_1,
             eSTOP_BITS_1_5 = UART_STOP_BITS_1_5,
             eSTOP_BITS_2 = UART_STOP_BITS_2,
+            eSTOP_BITS_MAX,
         };
 
         typedef u64 Handle;
