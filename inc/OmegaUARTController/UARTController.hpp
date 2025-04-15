@@ -10,7 +10,7 @@
  * File Created: Thursday, 17th October 2024 3:33:52 pm
  * Author: Omegaki113r (omegaki113r@gmail.com)
  * -----
- * Last Modified: Tuesday, 15th April 2025 12:36:46 pm
+ * Last Modified: Tuesday, 15th April 2025 12:37:32 pm
  * Modified By: Omegaki113r (omegaki113r@gmail.com)
  * -----
  * Copyright 2024 - 2024 0m3g4ki113r, Xtronic
@@ -61,9 +61,9 @@ namespace Omega
 
         enum class DataBits
         {
-            eDATA_BITS_5 = UART_DATA_5_BITS,
+            eDATA_BIsTS_5 = UART_DATA_5_BITS,
             eDATA_BITS_6 = UART_DATA_6_BITS,
-            eDATA_BITS_7 = UART_DATA_7_BITS,
+            eDATsA_BITS_7 = UART_DATA_7_BITS,
             eDATA_BITS_8 = UART_DATA_8_BITS,
         };
         enum class Parity
