@@ -3,6 +3,10 @@ project(OmegaUARTController LANGUAGES C CXX)
 include(FetchContent)
 find_package(Threads REQUIRED)
 
+find_library(QUARTZCORE_LIBRARY QuartzCore REQUIRED)
+find_library(COCOA_LIBRARY Cocoa REQUIRED)
+find_library(IOKIT_LIBRARY IOKit REQUIRED)
+
 
 FetchContent_Declare(
     OmegaUtilityDriver
@@ -15,7 +19,10 @@ FetchContent_MakeAvailable(OmegaUtilityDriver)
 add_library(OmegaUARTController STATIC ${PROJ_ROOT_DIR}/src/platform/macosx/UARTController.cpp)
 target_include_directories(OmegaUARTController PUBLIC ${PROJ_ROOT_DIR}/inc)
 target_link_libraries(OmegaUARTController PUBLIC 
-    OmegaUtilityDriver pthread
+    OmegaUtilityDriver Threads::Threads
+    ${QUARTZCORE_LIBRARY}
+    ${COCOA_LIBRARY}
+    ${IOKIT_LIBRARY}
 )
 target_compile_definitions(OmegaUARTController PUBLIC 
     CONFIG_OMEGA_LOGGING=1

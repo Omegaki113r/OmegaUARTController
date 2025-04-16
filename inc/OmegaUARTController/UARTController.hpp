@@ -44,6 +44,28 @@
 #define UART_STOP_BITS_1 ONESTOPBIT
 #define UART_STOP_BITS_1_5 ONE5STOPBITS
 #define UART_STOP_BITS_2 TWOSTOPBITS
+
+#elif MACOSX_UART
+
+#include <CoreFoundation/CoreFoundation.h>
+#include <IOKit/IOBSD.h>
+#include <IOKit/IOKitLib.h>
+#include <IOKit/serial/IOSerialKeys.h>
+#include <mach/mach.h>
+
+#define UART_DATA_5_BITS 5
+#define UART_DATA_6_BITS 6
+#define UART_DATA_7_BITS 7
+#define UART_DATA_8_BITS 8
+
+#define UART_PARITY_DISABLE 0
+#define UART_PARITY_EVEN 1
+#define UART_PARITY_ODD 2
+
+#define UART_STOP_BITS_1 0
+#define UART_STOP_BITS_1_5 1
+#define UART_STOP_BITS_2 2
+
 #endif
 
 namespace Omega
@@ -51,8 +73,11 @@ namespace Omega
     namespace UART
     {
         constexpr size_t FRIENDLY_PORT_NAME_SIZE{256};
+#if WINDOWS_UART
         constexpr size_t PORT_NAME_SIZE{32};
-
+#elif MACOSX_UART
+        constexpr size_t PORT_NAME_SIZE{256};
+#endif
         struct EnumeratedUARTPort
         {
             char m_friendly_portname[FRIENDLY_PORT_NAME_SIZE + 1]{0};
@@ -75,7 +100,9 @@ namespace Omega
         enum class StopBits
         {
             eSTOP_BITS_1 = UART_STOP_BITS_1,
+#ifndef MACOSX_UART
             eSTOP_BITS_1_5 = UART_STOP_BITS_1_5,
+#endif
             eSTOP_BITS_2 = UART_STOP_BITS_2,
         };
 
@@ -91,7 +118,10 @@ namespace Omega
 #if ESP32XX_UART
         [[nodiscard]] Handle init(uart_port_t in_port, OmegaGPIO in_tx, OmegaGPIO in_rx, Baudrate in_baudrate = 115200, DataBits in_databits = DataBits::eDATA_BITS_8, Parity in_parity = Parity::ePARITY_DISABLE, StopBits in_stopbits = StopBits::eSTOP_BITS_1);
 #elif WINDOWS_UART
-        [[nodiscard]] std::vector<EnumeratedUARTPort> omega_get_available_ports();
+        [[nodiscard]] std::vector<EnumeratedUARTPort> get_available_ports();
+        [[nodiscard]] Handle init(const char *in_port, Baudrate in_baudrate = 115200, DataBits in_databits = DataBits::eDATA_BITS_8, Parity in_parity = Parity::ePARITY_DISABLE, StopBits in_stopbits = StopBits::eSTOP_BITS_1);
+#elif MACOSX_UART
+        [[nodiscard]] std::vector<EnumeratedUARTPort> get_available_ports();
         [[nodiscard]] Handle init(const char *in_port, Baudrate in_baudrate = 115200, DataBits in_databits = DataBits::eDATA_BITS_8, Parity in_parity = Parity::ePARITY_DISABLE, StopBits in_stopbits = StopBits::eSTOP_BITS_1);
 #endif
         OmegaStatus start(Handle in_handle);
@@ -102,6 +132,8 @@ namespace Omega
         __attribute__((weak)) void on_data(const Omega::UART::Handle, const u8 *, const size_t);
 #elif WINDOWS_UART
         OmegaStatus add_on_read_callback(Handle in_handle, std::function<void(const Handle, const u8 *, const size_t)> in_callback);
+#elif MACOSX_UART
+    OmegaStatus add_on_read_callback(Handle in_handle, std::function<void(const Handle, const u8 *, const size_t)> in_callback);
 #endif
     } // namespace UART
 } // namespace Omega
