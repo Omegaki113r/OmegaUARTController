@@ -10,7 +10,7 @@
  * File Created: Monday, 14th April 2025 6:40:03 am
  * Author: Omegaki113r (omegaki113r@gmail.com)
  * -----
- * Last Modified: Monday, 14th April 2025 12:05:15 pm
+ * Last Modified: Wednesday, 16th April 2025 3:10:35 pm
  * Modified By: Omegaki113r (omegaki113r@gmail.com)
  * -----
  * Copyright 2024 - 2025 0m3g4ki113r, Xtronic
@@ -27,15 +27,14 @@
 
 #include <windows.h>
 
-#include <setupapi.h>
 #include <cfgmgr32.h>
+#include <setupapi.h>
 #include <tchar.h>
 
 #include <initguid.h>
 
 #include "OmegaUARTController/UARTController.hpp"
 #include "OmegaUtilityDriver/UtilityDriver.hpp"
-
 
 namespace Omega
 {
@@ -197,7 +196,7 @@ namespace Omega
 			return eFAILED;
 		}
 
-		std::vector<EnumeratedUARTPort> omega_get_available_ports()
+		std::vector<EnumeratedUARTPort> get_available_ports()
 		{
 			std::vector<EnumeratedUARTPort> enumerated_ports;
 			enumerated_ports.reserve(10);
