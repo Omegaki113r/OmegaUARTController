@@ -10,7 +10,7 @@
  * File Created: Monday, 14th April 2025 6:40:03 am
  * Author: Omegaki113r (omegaki113r@gmail.com)
  * -----
- * Last Modified: Wednesday, 16th April 2025 3:10:35 pm
+ * Last Modified: Saturday, 19th April 2025 2:40:56 pm
  * Modified By: Omegaki113r (omegaki113r@gmail.com)
  * -----
  * Copyright 2024 - 2025 0m3g4ki113r, Xtronic
@@ -84,6 +84,7 @@ namespace Omega
 				return 0;
 			}
 			dcb_parameters.BaudRate = in_baudrate;
+			dcb_parameters.fBinary = true;
 			dcb_parameters.ByteSize = static_cast<BYTE>(in_databits);
 			dcb_parameters.StopBits = static_cast<BYTE>(in_stopbits);
 			dcb_parameters.Parity = static_cast<BYTE>(in_parity);

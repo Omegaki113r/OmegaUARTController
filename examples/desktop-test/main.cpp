@@ -27,7 +27,7 @@
 void main() 
 {
 
-	const auto ports = ::Omega::UART::omega_get_available_ports();
+	const auto ports = ::Omega::UART::get_available_ports();
 	for (const auto& port : ports)
 	{
 		OMEGA_LOGD("%s || %s", port.m_friendly_portname, port.m_port_name);
