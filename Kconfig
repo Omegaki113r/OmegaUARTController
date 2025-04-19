@@ -19,6 +19,11 @@ menu "OmegaUARTController Configuration"
         default "n"
         help
             This is used to enable or disable error logs
+    config ESP32XX_UART
+        bool "Enable UART Controller Error logs"
+        default "y"
+        help
+            This is used to enable or disable error logs
     config OMEGA_UART_CONTROLLER_PROFILE
         bool "Enable UART Controller Profiling"
         default "n"

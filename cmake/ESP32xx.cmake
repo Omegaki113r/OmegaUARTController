@@ -4,3 +4,4 @@ idf_component_register(
     SRCS                ${PROJ_SOURCES}
     REQUIRES            driver OmegaUtilityDriver)
 add_compile_definitions(ESP32XX_UART)
+target_compile_definitions(${COMPONENT_LIB} PUBLIC ESP32XX_UART)

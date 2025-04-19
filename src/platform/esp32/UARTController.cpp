@@ -10,7 +10,7 @@
  * File Created: Thursday, 17th October 2024 3:34:02 pm
  * Author: Omegaki113r (omegaki113r@gmail.com)
  * -----
- * Last Modified: Saturday, 11th January 2025 12:32:16 am
+ * Last Modified: Saturday, 19th April 2025 3:40:15 pm
  * Modified By: Omegaki113r (omegaki113r@gmail.com)
  * -----
  * Copyright 2024 - 2024 0m3g4ki113r, Xtronic
@@ -26,6 +26,7 @@
 #include <freertos/task.h>
 
 #include <driver/gpio.h>
+#include <driver/uart.h>
 #include <esp_err.h>
 
 #include <sdkconfig.h>
@@ -56,7 +57,7 @@
 #define LOGE(format, ...)
 #endif
 
-internal constexpr size_t s_UART_BASE_STACK_SIZE = 256;
+__internal__ constexpr size_t s_UART_BASE_STACK_SIZE = 256;
 #define UART_EVENT_HANDLER_STACK_SIZE (configMINIMAL_STACK_SIZE + s_UART_BASE_STACK_SIZE * 4)
 
 namespace Omega
@@ -90,9 +91,9 @@ namespace Omega
             size_t (*write_uart)(uint8_t *, size_t, uint32_t);
         };
 
-        internal std::unordered_map<Handle, UARTController> s_controllers;
+        __internal__ std::unordered_map<Handle, UARTController> s_controllers;
 
-        internal inline OmegaStatus initialize_stack(UARTController &controller, const uart_config_t &in_config)
+        __internal__ inline OmegaStatus initialize_stack(UARTController &controller, const uart_config_t &in_config)
         {
             if (ESP_OK != uart_param_config(controller.m_uart_port, &in_config))
             {
@@ -123,7 +124,7 @@ namespace Omega
                     uart_event_t uart_event{};
                     if (nullptr == controller->queue_handle)
                     {
-                        delay(500_s);
+                        delay({0, 0, 0, 500});
                         continue;
                     }
                     xQueueReceive(controller->queue_handle, &uart_event, portMAX_DELAY);

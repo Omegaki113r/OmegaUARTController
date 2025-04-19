@@ -10,7 +10,7 @@
  * File Created: Monday, 14th April 2025 6:40:03 am
  * Author: Omegaki113r (omegaki113r@gmail.com)
  * -----
- * Last Modified: Saturday, 19th April 2025 2:40:56 pm
+ * Last Modified: Saturday, 19th April 2025 3:00:13 pm
  * Modified By: Omegaki113r (omegaki113r@gmail.com)
  * -----
  * Copyright 2024 - 2025 0m3g4ki113r, Xtronic
@@ -84,7 +84,20 @@ namespace Omega
 				return 0;
 			}
 			dcb_parameters.BaudRate = in_baudrate;
-			dcb_parameters.fBinary = true;
+			dcb_parameters.fBinary = TRUE;             
+			dcb_parameters.fParity = FALSE;            
+			dcb_parameters.fOutxCtsFlow = FALSE;        
+			dcb_parameters.fOutxDsrFlow = FALSE;       
+			dcb_parameters.fDtrControl = DTR_CONTROL_DISABLE; 
+			dcb_parameters.fDsrSensitivity = FALSE;    
+			dcb_parameters.fTXContinueOnXoff = TRUE;    
+			dcb_parameters.fOutX = FALSE;              
+			dcb_parameters.fInX = FALSE;              
+			dcb_parameters.fErrorChar = FALSE;         
+			dcb_parameters.fNull = FALSE;             
+			dcb_parameters.fRtsControl = RTS_CONTROL_DISABLE; 
+			dcb_parameters.fRtsControl = RTS_CONTROL_DISABLE; 
+			dcb_parameters.fAbortOnError = FALSE;
 			dcb_parameters.ByteSize = static_cast<BYTE>(in_databits);
 			dcb_parameters.StopBits = static_cast<BYTE>(in_stopbits);
 			dcb_parameters.Parity = static_cast<BYTE>(in_parity);
