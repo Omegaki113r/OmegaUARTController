@@ -10,8 +10,8 @@
  * File Created: Thursday, 17th October 2024 3:33:52 pm
  * Author: Omegaki113r (omegaki113r@gmail.com)
  * -----
- * Last Modified: Saturday, 19th April 2025 4:22:02 pm
- * Modified By: Omegaki113r (omegaki113r@gmail.com)
+ * Last Modified: Sunday, 20th April 2025 8:39:01 am
+ * Modified By: 0m3g4ki113r (omegaki113r@gmail.com)
  * -----
  * Copyright 2024 - 2024 0m3g4ki113r, Xtronic
  * -----
@@ -70,6 +70,21 @@
 
 #include <driver/uart.h>
 
+#elif defined(LINUX_UART)
+
+#define UART_DATA_5_BITS 5
+#define UART_DATA_6_BITS 6
+#define UART_DATA_7_BITS 7
+#define UART_DATA_8_BITS 8
+
+#define UART_PARITY_DISABLE 0
+#define UART_PARITY_EVEN 1
+#define UART_PARITY_ODD 2
+
+#define UART_STOP_BITS_1 0
+#define UART_STOP_BITS_1_5 1
+#define UART_STOP_BITS_2 2
+
 #endif
 
 namespace Omega
@@ -80,6 +95,8 @@ namespace Omega
 #if defined(WINDOWS_UART)
                 constexpr size_t PORT_NAME_SIZE{32};
 #elif defined(MACOSX_UART)
+                constexpr size_t PORT_NAME_SIZE{256};
+#elif defined(LINUX_UART)
                 constexpr size_t PORT_NAME_SIZE{256};
 #endif
                 struct EnumeratedUARTPort
@@ -123,10 +140,7 @@ namespace Omega
 
 #if defined(ESP32XX_UART)
                 [[nodiscard]] Handle init(uart_port_t in_port, OmegaGPIO in_tx, OmegaGPIO in_rx, Baudrate in_baudrate = 115200, DataBits in_databits = DataBits::eDATA_BITS_8, Parity in_parity = Parity::ePARITY_DISABLE, StopBits in_stopbits = StopBits::eSTOP_BITS_1);
-#elif defined(WINDOWS_UART)
-                [[nodiscard]] std::vector<EnumeratedUARTPort> get_available_ports();
-                [[nodiscard]] Handle init(const char *in_port, Baudrate in_baudrate = 115200, DataBits in_databits = DataBits::eDATA_BITS_8, Parity in_parity = Parity::ePARITY_DISABLE, StopBits in_stopbits = StopBits::eSTOP_BITS_1);
-#elif defined(MACOSX_UART)
+#elif defined(WINDOWS_UART) || defined(MACOSX_UART) || defined(LINUX_UART)
                 [[nodiscard]] std::vector<EnumeratedUARTPort> get_available_ports();
                 [[nodiscard]] Handle init(const char *in_port, Baudrate in_baudrate = 115200, DataBits in_databits = DataBits::eDATA_BITS_8, Parity in_parity = Parity::ePARITY_DISABLE, StopBits in_stopbits = StopBits::eSTOP_BITS_1);
 #endif
@@ -136,9 +150,7 @@ namespace Omega
                 OmegaStatus deinit(const Handle);
 #if defined(ESP32XX_UART)
                 __attribute__((weak)) void on_data(const Omega::UART::Handle, const u8 *, const size_t);
-#elif defined(WINDOWS_UART)
-                OmegaStatus add_on_read_callback(Handle in_handle, std::function<void(const Handle, const u8 *, const size_t)> in_callback);
-#elif defined(MACOSX_UART)
+#elif defined(WINDOWS_UART) || defined(MACOSX_UART) || defined(LINUX_UART)
                 OmegaStatus add_on_read_callback(Handle in_handle, std::function<void(const Handle, const u8 *, const size_t)> in_callback);
 #endif
         } // namespace UART
