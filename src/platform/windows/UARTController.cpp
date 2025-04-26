@@ -60,7 +60,9 @@ namespace Omega
 		{
 			__internal__ Handle user_serial_handle = 0;
 			HANDLE serial_handle = 0;
-			if (serial_handle = CreateFile(in_port, GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr); INVALID_HANDLE_VALUE == serial_handle)
+			char deviceName[PORT_NAME_SIZE + 1]{0};
+    			sprintf(deviceName, "\\\\.\\%s", in_port); 
+			if (serial_handle = CreateFile(deviceName, GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr); INVALID_HANDLE_VALUE == serial_handle)
 			{
 				OMEGA_LOGE("Opening Serialport failed. Reason: %s", ERROR_FILE_NOT_FOUND == GetLastError() ? "COMPORT NOT FOUND" : "OPENING COMPORT FAILED");
 				return 0;

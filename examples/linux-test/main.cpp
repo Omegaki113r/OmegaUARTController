@@ -10,7 +10,7 @@
  * File Created: Thursday, 17th October 2024 7:03:04 pm
  * Author: Omegaki113r (omegaki113r@gmail.com)
  * -----
- * Last Modified: Sunday, 20th April 2025 8:37:28 am
+ * Last Modified: Wednesday, 23rd April 2025 1:07:57 am
  * Modified By: 0m3g4ki113r (omegaki113r@gmail.com)
  * -----
  * Copyright 2024 - 2024 0m3g4ki113r, Xtronic
@@ -26,14 +26,13 @@
 
 int main()
 {
-
 	const auto ports = ::Omega::UART::get_available_ports();
 	for (const auto &port : ports)
 	{
 		OMEGA_LOGD("%s || %s", port.m_friendly_portname, port.m_port_name);
 	}
 
-	const auto handle = ::Omega::UART::init("COM8");
+	const auto handle = ::Omega::UART::init("/dev/ttyACM1");
 	if (0 == handle)
 	{
 		OMEGA_LOGE("invalid handle");
