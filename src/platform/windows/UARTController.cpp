@@ -10,7 +10,7 @@
  * File Created: Monday, 14th April 2025 6:40:03 am
  * Author: Omegaki113r (omegaki113r@gmail.com)
  * -----
- * Last Modified: Saturday, 26th April 2025 3:05:55 pm
+ * Last Modified: Saturday, 26th April 2025 3:11:10 pm
  * Modified By: Omegaki113r (omegaki113r@gmail.com)
  * -----
  * Copyright 2024 - 2025 0m3g4ki113r, Xtronic
@@ -61,7 +61,7 @@ namespace Omega
 			__internal__ Handle user_serial_handle = 0;
 			HANDLE serial_handle = 0;
 			char deviceName[PORT_NAME_SIZE + 1]{0};
-    			sprintf(deviceName, "\\\\.\\%s", in_port); 
+			sprintf(deviceName, "\\\\.\\%s", in_port);
 			if (serial_handle = CreateFile(deviceName, GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr); INVALID_HANDLE_VALUE == serial_handle)
 			{
 				OMEGA_LOGE("Opening Serialport failed. Reason: %s", ERROR_FILE_NOT_FOUND == GetLastError() ? "COMPORT NOT FOUND" : "OPENING COMPORT FAILED");
@@ -207,9 +207,12 @@ namespace Omega
 			if (const auto found = s_com_ports.find(in_handle); s_com_ports.end() != found)
 			{
 				auto &uart_port = s_com_ports.at(in_handle);
-				uart_port.m_uart_read_thread->join();
-				delete uart_port.m_uart_read_thread;
-				uart_port.m_uart_read_thread = nullptr;
+				if (nullptr != uart_port.m_uart_read_thread)
+				{
+					uart_port.m_uart_read_thread->join();
+					delete uart_port.m_uart_read_thread;
+					uart_port.m_uart_read_thread = nullptr;
+				}
 				if (!CloseHandle(uart_port.m_handle))
 				{
 					OMEGA_LOGE("Closing COMPORT failed");
