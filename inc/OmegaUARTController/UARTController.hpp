@@ -10,7 +10,7 @@
  * File Created: Thursday, 17th October 2024 3:33:52 pm
  * Author: Omegaki113r (omegaki113r@gmail.com)
  * -----
- * Last Modified: Saturday, 19th April 2025 4:22:02 pm
+ * Last Modified: Saturday, 26th April 2025 3:03:18 pm
  * Modified By: Omegaki113r (omegaki113r@gmail.com)
  * -----
  * Copyright 2024 - 2024 0m3g4ki113r, Xtronic
@@ -130,6 +130,7 @@ namespace Omega
                 [[nodiscard]] std::vector<EnumeratedUARTPort> get_available_ports();
                 [[nodiscard]] Handle init(const char *in_port, Baudrate in_baudrate = 115200, DataBits in_databits = DataBits::eDATA_BITS_8, Parity in_parity = Parity::ePARITY_DISABLE, StopBits in_stopbits = StopBits::eSTOP_BITS_1);
 #endif
+                bool connected(Handle in_handle);
                 OmegaStatus start(Handle in_handle);
                 [[nodiscard]] Response read(Handle in_handle, u8 *out_buffer, const size_t in_read_bytes, u32 in_timeout_ms);
                 [[nodiscard]] Response write(Handle in_handle, const u8 *in_buffer, const size_t in_write_bytes, u32 in_timeout_ms);

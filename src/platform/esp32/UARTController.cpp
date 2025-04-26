@@ -10,7 +10,7 @@
  * File Created: Thursday, 17th October 2024 3:34:02 pm
  * Author: Omegaki113r (omegaki113r@gmail.com)
  * -----
- * Last Modified: Saturday, 19th April 2025 3:40:15 pm
+ * Last Modified: Saturday, 26th April 2025 3:07:01 pm
  * Modified By: Omegaki113r (omegaki113r@gmail.com)
  * -----
  * Copyright 2024 - 2024 0m3g4ki113r, Xtronic
@@ -234,6 +234,15 @@ namespace Omega
                 return 0;
             }
             return handle;
+        }
+
+        bool connected(Handle in_handle)
+        {
+            if (const auto found = s_controllers.find(in_handle); s_controllers.end() != found)
+            {
+                return true;
+            }
+            return false;
         }
 
         Response read(Handle in_handle, u8 *out_buffer, const size_t in_read_bytes, const u32 in_timeout_ms)
