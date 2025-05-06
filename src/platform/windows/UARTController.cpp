@@ -161,34 +161,83 @@ namespace Omega
 
 		[[nodiscard]] Response read(Handle in_handle, u8 *out_buffer, const size_t in_read_bytes, u32 in_timeout_ms)
 		{
-			if (const auto found = s_com_ports.find(in_handle); s_com_ports.end() != found)
-			{
-				auto &uart_port = s_com_ports.at(in_handle);
-				unsigned long read_bytes = 0;
-				if (!ReadFile(uart_port.m_handle, out_buffer, in_read_bytes, &read_bytes, nullptr))
-				{
-					OMEGA_LOGE("Write filed failed");
-					return {eFAILED, 0};
-				}
-				return {eSUCCESS, read_bytes};
-			}
-			return {eSUCCESS, 0};
+		    if (const auto found = s_com_ports.find(in_handle); s_com_ports.end() != found)
+		    {
+		        auto &uart_port = s_com_ports.at(in_handle);
+		        OVERLAPPED ov = {};
+		        ov.hEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);  // manual reset
+		
+		        DWORD read_bytes = 0;
+		        BOOL result = ReadFile(uart_port.m_handle, out_buffer, in_read_bytes, &read_bytes, &ov);
+		        if (!result)
+		        {
+		            if (GetLastError() == ERROR_IO_PENDING)
+		            {
+		                DWORD wait_result = WaitForSingleObject(ov.hEvent, in_timeout_ms);
+		                if (wait_result == WAIT_OBJECT_0)
+		                {
+		                    GetOverlappedResult(uart_port.m_handle, &ov, &read_bytes, FALSE);
+		                }
+		                else
+		                {
+		                    CancelIo(uart_port.m_handle); // Timeout occurred
+		                    CloseHandle(ov.hEvent);
+		                    return {eFAILED, 0};
+		                }
+		            }
+		            else
+		            {
+		                CloseHandle(ov.hEvent);
+		                OMEGA_LOGE("ReadFile failed");
+		                return {eFAILED, 0};
+		            }
+		        }
+		
+		        CloseHandle(ov.hEvent);
+		        return {eSUCCESS, read_bytes};
+		    }
+		    return {eFAILED, 0};
 		}
+
 
 		[[nodiscard]] Response write(Handle in_handle, const u8 *in_buffer, const size_t in_write_bytes, u32 in_timeout_ms)
 		{
-			if (const auto found = s_com_ports.find(in_handle); s_com_ports.end() != found)
-			{
-				auto &uart_port = s_com_ports.at(in_handle);
-				unsigned long written_bytes = 0;
-				if (!WriteFile(uart_port.m_handle, in_buffer, in_write_bytes, &written_bytes, 0))
-				{
-					OMEGA_LOGE("Write filed failed");
-					return {eFAILED, 0};
-				}
-				return {eSUCCESS, written_bytes};
-			}
-			return {eSUCCESS, 0};
+		    if (const auto found = s_com_ports.find(in_handle); s_com_ports.end() != found)
+		    {
+		        auto &uart_port = s_com_ports.at(in_handle);
+		        OVERLAPPED ov = {};
+		        ov.hEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
+		
+		        DWORD written_bytes = 0;
+		        BOOL result = WriteFile(uart_port.m_handle, in_buffer, in_write_bytes, &written_bytes, &ov);
+		        if (!result)
+		        {
+		            if (GetLastError() == ERROR_IO_PENDING)
+		            {
+		                DWORD wait_result = WaitForSingleObject(ov.hEvent, in_timeout_ms);
+		                if (wait_result == WAIT_OBJECT_0)
+		                {
+		                    GetOverlappedResult(uart_port.m_handle, &ov, &written_bytes, FALSE);
+		                }
+		                else
+		                {
+		                    CancelIo(uart_port.m_handle); // Timeout occurred
+		                    CloseHandle(ov.hEvent);
+		                    return {eFAILED, 0};
+		                }
+		            }
+		            else
+		            {
+		                CloseHandle(ov.hEvent);
+		                OMEGA_LOGE("WriteFile failed");
+		                return {eFAILED, 0};
+		            }
+		        }
+		
+		        CloseHandle(ov.hEvent);
+		        return {eSUCCESS, written_bytes};
+		    }
+		    return {eFAILED, 0};
 		}
 
 		OmegaStatus add_on_read_callback(Handle in_handle, std::function<void(const Handle, const u8 *, const size_t)> in_callback)
