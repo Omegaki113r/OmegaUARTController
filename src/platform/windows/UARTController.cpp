@@ -194,7 +194,7 @@ namespace Omega
 			if (const auto found = s_com_ports.find(in_handle); s_com_ports.end() != found)
 			{
 				auto &uart_port = s_com_ports.at(in_handle);
-				if (UARTStatus::eCONNECTED != uart_port.m_status || UARTStatus::eSTARTED != uart_port.m_status)
+				if (UARTStatus::eCONNECTED != uart_port.m_status && UARTStatus::eSTARTED != uart_port.m_status)
 				{
 					return {eFAILED, 0};
 				}
