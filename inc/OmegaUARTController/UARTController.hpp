@@ -144,15 +144,19 @@ namespace Omega
                 [[nodiscard]] std::vector<EnumeratedUARTPort> get_available_ports();
                 [[nodiscard]] Handle init(const char *in_port, Baudrate in_baudrate = 115200, DataBits in_databits = DataBits::eDATA_BITS_8, Parity in_parity = Parity::ePARITY_DISABLE, StopBits in_stopbits = StopBits::eSTOP_BITS_1);
 #endif
-                bool connected(Handle in_handle);
-                OmegaStatus start(Handle in_handle);
+                OmegaStatus connect(Handle in_handle);
+                bool is_connected(Handle in_handle);
+                OmegaStatus start(Handle in_handle,const std::function<void(const Handle, const u8*, const size_t)> &in_callback);
                 [[nodiscard]] Response read(Handle in_handle, u8 *out_buffer, const size_t in_read_bytes, u32 in_timeout_ms);
                 [[nodiscard]] Response write(Handle in_handle, const u8 *in_buffer, const size_t in_write_bytes, u32 in_timeout_ms);
+                OmegaStatus stop(Handle in_handle);
+                OmegaStatus disconnect(Handle in_handle);
                 OmegaStatus deinit(const Handle);
 #if defined(ESP32XX_UART)
                 __attribute__((weak)) void on_data(const Omega::UART::Handle, const u8 *, const size_t);
 #elif defined(WINDOWS_UART) || defined(MACOSX_UART) || defined(LINUX_UART)
-                OmegaStatus add_on_read_callback(Handle in_handle, std::function<void(const Handle, const u8 *, const size_t)> in_callback);
+                OmegaStatus add_on_connected_callback(Handle in_handle, std::function<void()>in_callback);
+                OmegaStatus add_on_disconnected_callback(Handle in_handle, std::function<void()>in_callback);
 #endif
         } // namespace UART
 } // namespace Omega
