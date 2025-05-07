@@ -4,27 +4,27 @@
  * @date Monday, 14th April 2025 6:40:03 am
  * @copyright Copyright 2024 - 2025 0m3g4ki113r, Xtronic
  * */
- /*
-  * Project: OmegaUARTController
-  * File Name: UARTController.cpp
-  * File Created: Monday, 14th April 2025 6:40:03 am
-  * Author: Omegaki113r (omegaki113r@gmail.com)
-  * -----
-  * Last Modified: Saturday, 26th April 2025 3:11:10 pm
-  * Modified By: Omegaki113r (omegaki113r@gmail.com)
-  * -----
-  * Copyright 2024 - 2025 0m3g4ki113r, Xtronic
-  * -----
-  * HISTORY:
-  * Date      	By	Comments
-  * ----------	---	---------------------------------------------------------
-  */
+/*
+ * Project: OmegaUARTController
+ * File Name: UARTController.cpp
+ * File Created: Monday, 14th April 2025 6:40:03 am
+ * Author: Omegaki113r (omegaki113r@gmail.com)
+ * -----
+ * Last Modified: Saturday, 26th April 2025 3:11:10 pm
+ * Modified By: Omegaki113r (omegaki113r@gmail.com)
+ * -----
+ * Copyright 2024 - 2025 0m3g4ki113r, Xtronic
+ * -----
+ * HISTORY:
+ * Date      	By	Comments
+ * ----------	---	---------------------------------------------------------
+ */
 
+#include <atomic>
 #include <cstring>
 #include <functional>
 #include <thread>
 #include <unordered_map>
-#include <atomic>
 
 #include <windows.h>
 
@@ -45,31 +45,36 @@ namespace Omega
 
 		enum class UARTStatus
 		{
-			eINITED, eCONNECTED, eSTARTED, eSTOPPED, eDISCONNECTED, eDEINITED,
+			eINITED,
+			eCONNECTED,
+			eSTARTED,
+			eSTOPPED,
+			eDISCONNECTED,
+			eDEINITED,
 		};
 
 		struct UARTPort
 		{
 			HANDLE m_handle;
-			char m_port_name[PORT_NAME_SIZE + 1]{ 0 };
-			Baudrate m_baudrate{ 115200 };
-			DataBits m_databits{ DataBits::eDATA_BITS_8 };
-			StopBits m_stopbits{ StopBits::eSTOP_BITS_1 };
-			Parity m_parity{ Parity::ePARITY_DISABLE };
+			char m_port_name[PORT_NAME_SIZE + 1]{0};
+			Baudrate m_baudrate{115200};
+			DataBits m_databits{DataBits::eDATA_BITS_8};
+			StopBits m_stopbits{StopBits::eSTOP_BITS_1};
+			Parity m_parity{Parity::ePARITY_DISABLE};
 			std::function<void()> m_connected_callback;
-			std::function<void(const Handle, const u8*, const size_t)> m_read_callbacks;
+			std::function<void(const Handle, const u8 *, const size_t)> m_read_callbacks;
 			std::function<void()> m_disconnected_callback;
-			UARTStatus m_status{ UARTStatus::eDEINITED };
-			std::thread* m_uart_read_thread{ nullptr };
+			UARTStatus m_status{UARTStatus::eDEINITED};
+			std::thread *m_uart_read_thread{nullptr};
 		};
 
 		__internal__ std::unordered_map<Handle, UARTPort> s_com_ports;
 
-		[[nodiscard]] Handle init(const char* in_port, Baudrate in_baudrate, DataBits in_databits, Parity in_parity, StopBits in_stopbits)
+		[[nodiscard]] Handle init(const char *in_port, Baudrate in_baudrate, DataBits in_databits, Parity in_parity, StopBits in_stopbits)
 		{
 			__internal__ Handle user_serial_handle = 0;
 			HANDLE serial_handle = 0;
-			char deviceName[PORT_NAME_SIZE + 1]{ 0 };
+			char deviceName[PORT_NAME_SIZE + 1]{0};
 			sprintf(deviceName, "\\\\.\\%s", in_port);
 			if (serial_handle = CreateFile(deviceName, GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr); INVALID_HANDLE_VALUE == serial_handle)
 			{
@@ -86,7 +91,7 @@ namespace Omega
 			};
 			UNUSED(std::strncpy(serial_port.m_port_name, in_port, PORT_NAME_SIZE));
 			serial_port.m_status = UARTStatus::eINITED;
-			UNUSED(s_com_ports.insert({ user_serial_handle, serial_port }));
+			UNUSED(s_com_ports.insert({user_serial_handle, serial_port}));
 
 			return user_serial_handle;
 		}
@@ -95,7 +100,7 @@ namespace Omega
 		{
 			if (const auto found = s_com_ports.find(in_handle); s_com_ports.end() != found)
 			{
-				auto& uart_port = s_com_ports.at(in_handle);
+				auto &uart_port = s_com_ports.at(in_handle);
 
 				DCB dcb_parameters{};
 				if (!GetCommState(uart_port.m_handle, &dcb_parameters))
@@ -152,83 +157,83 @@ namespace Omega
 		{
 			if (const auto found = s_com_ports.find(in_handle); s_com_ports.end() != found)
 			{
-				const auto& uart_port = s_com_ports.at(in_handle);
+				const auto &uart_port = s_com_ports.at(in_handle);
 				return UARTStatus::eSTARTED == uart_port.m_status || UARTStatus::eCONNECTED == uart_port.m_status || UARTStatus::eSTOPPED == uart_port.m_status;
 			}
 			return false;
 		}
 
-		OmegaStatus start(Handle in_handle, const std::function<void(const Handle, const u8*, const size_t)>& in_callback)
+		OmegaStatus start(Handle in_handle, const std::function<void(const Handle, const u8 *, const size_t)> &in_callback)
 		{
 			if (nullptr == in_callback)
 				return eFAILED;
 			if (const auto found = s_com_ports.find(in_handle); s_com_ports.end() != found)
 			{
-				auto& uart_port = s_com_ports.at(in_handle);
-				auto uart_read_thread = [in_handle, in_callback](const UARTPort& in_uart_port)
+				auto &uart_port = s_com_ports.at(in_handle);
+				auto uart_read_thread = [in_handle, in_callback](const UARTPort &in_uart_port)
+				{
+					while (UARTStatus::eSTARTED == in_uart_port.m_status)
 					{
-						while (UARTStatus::eSTARTED == in_uart_port.m_status)
+						char buffer[100 + 1]{0};
+						const auto response = read(in_handle, (u8 *)buffer, 100, 0);
+						if (0 < response.size)
 						{
-							char buffer[100 + 1]{ 0 };
-							const auto response = read(in_handle, (u8*)buffer, 100, 0);
-							if (0 < response.size)
-							{
-								in_callback(in_handle, (const u8*)buffer, response.size);
-							}
+							in_callback(in_handle, (const u8 *)buffer, response.size);
 						}
-					};
-				uart_port.m_uart_read_thread = new std::thread{ uart_read_thread, std::ref(uart_port) };
+					}
+				};
+				uart_port.m_uart_read_thread = new std::thread{uart_read_thread, std::ref(uart_port)};
 				uart_port.m_status = UARTStatus::eSTARTED;
 				return eSUCCESS;
 			}
 			return eFAILED;
 		}
 
-		[[nodiscard]] Response read(Handle in_handle, u8* out_buffer, const size_t in_read_bytes, u32 in_timeout_ms)
+		[[nodiscard]] Response read(Handle in_handle, u8 *out_buffer, const size_t in_read_bytes, u32 in_timeout_ms)
 		{
 			if (const auto found = s_com_ports.find(in_handle); s_com_ports.end() != found)
 			{
-				auto& uart_port = s_com_ports.at(in_handle);
+				auto &uart_port = s_com_ports.at(in_handle);
 				if (UARTStatus::eCONNECTED != uart_port.m_status || UARTStatus::eSTARTED != uart_port.m_status)
 				{
-					return { eFAILED,0 };
+					return {eFAILED, 0};
 				}
 				unsigned long read_bytes = 0;
 				if (!ReadFile(uart_port.m_handle, out_buffer, in_read_bytes, &read_bytes, nullptr))
 				{
 					OMEGA_LOGE("Write filed failed");
-					return { eFAILED, 0 };
+					return {eFAILED, 0};
 				}
-				return { eSUCCESS, read_bytes };
+				return {eSUCCESS, read_bytes};
 			}
-			return { eSUCCESS, 0 };
+			return {eSUCCESS, 0};
 		}
 
-		[[nodiscard]] Response write(Handle in_handle, const u8* in_buffer, const size_t in_write_bytes, u32 in_timeout_ms)
+		[[nodiscard]] Response write(Handle in_handle, const u8 *in_buffer, const size_t in_write_bytes, u32 in_timeout_ms)
 		{
 			if (const auto found = s_com_ports.find(in_handle); s_com_ports.end() != found)
 			{
-				auto& uart_port = s_com_ports.at(in_handle);
+				auto &uart_port = s_com_ports.at(in_handle);
 				if (UARTStatus::eCONNECTED != uart_port.m_status || UARTStatus::eSTARTED != uart_port.m_status)
 				{
-					return { eFAILED,0 };
+					return {eFAILED, 0};
 				}
 				unsigned long written_bytes = 0;
 				if (!WriteFile(uart_port.m_handle, in_buffer, in_write_bytes, &written_bytes, 0))
 				{
 					OMEGA_LOGE("Write filed failed");
-					return { eFAILED, 0 };
+					return {eFAILED, 0};
 				}
-				return { eSUCCESS, written_bytes };
+				return {eSUCCESS, written_bytes};
 			}
-			return { eSUCCESS, 0 };
+			return {eSUCCESS, 0};
 		}
 
 		OmegaStatus stop(Handle in_handle)
 		{
 			if (const auto found = s_com_ports.find(in_handle); s_com_ports.end() != found)
 			{
-				auto& uart_port = s_com_ports.at(in_handle);
+				auto &uart_port = s_com_ports.at(in_handle);
 				if (nullptr != uart_port.m_uart_read_thread)
 				{
 					uart_port.m_status = UARTStatus::eSTOPPED;
@@ -245,7 +250,7 @@ namespace Omega
 		{
 			if (const auto found = s_com_ports.find(in_handle); s_com_ports.end() != found)
 			{
-				auto& uart_port = s_com_ports.at(in_handle);
+				auto &uart_port = s_com_ports.at(in_handle);
 				if (nullptr != uart_port.m_uart_read_thread)
 				{
 					uart_port.m_status = UARTStatus::eSTOPPED;
@@ -266,22 +271,22 @@ namespace Omega
 			return eFAILED;
 		}
 
-		OmegaStatus add_on_connected_callback(Handle in_handle, std::function<void()>in_callback)
+		OmegaStatus add_on_connected_callback(Handle in_handle, std::function<void()> in_callback)
 		{
 			if (const auto found = s_com_ports.find(in_handle); s_com_ports.end() != found)
 			{
-				auto& uart_port = s_com_ports.at(in_handle);
+				auto &uart_port = s_com_ports.at(in_handle);
 				uart_port.m_connected_callback = in_callback;
 				return eSUCCESS;
 			}
 			return eFAILED;
 		}
 
-		OmegaStatus add_on_disconnected_callback(Handle in_handle, std::function<void()>in_callback)
+		OmegaStatus add_on_disconnected_callback(Handle in_handle, std::function<void()> in_callback)
 		{
 			if (const auto found = s_com_ports.find(in_handle); s_com_ports.end() != found)
 			{
-				auto& uart_port = s_com_ports.at(in_handle);
+				auto &uart_port = s_com_ports.at(in_handle);
 				uart_port.m_disconnected_callback = in_callback;
 				return eSUCCESS;
 			}
@@ -292,7 +297,7 @@ namespace Omega
 		{
 			if (const auto found = s_com_ports.find(in_handle); s_com_ports.end() != found)
 			{
-				auto& uart_port = s_com_ports.at(in_handle);
+				auto &uart_port = s_com_ports.at(in_handle);
 				if (nullptr != uart_port.m_uart_read_thread)
 				{
 					uart_port.m_status = UARTStatus::eSTOPPED;
@@ -328,14 +333,14 @@ namespace Omega
 				return enumerated_ports;
 			}
 
-			SP_DEVINFO_DATA devInfoData = { sizeof(SP_DEVINFO_DATA) };
+			SP_DEVINFO_DATA devInfoData = {sizeof(SP_DEVINFO_DATA)};
 			DWORD index = 0;
 
 			// Enumerate all COM port devices
 			while (SetupDiEnumDeviceInfo(hDevInfo, index, &devInfoData))
 			{
-				TCHAR friendlyName[256] = { 0 };
-				TCHAR portName[32] = { 0 };
+				TCHAR friendlyName[256] = {0};
+				TCHAR portName[32] = {0};
 				DWORD size = 0;
 
 				// Get friendly name (e.g., "Communications Port (COM1)")
