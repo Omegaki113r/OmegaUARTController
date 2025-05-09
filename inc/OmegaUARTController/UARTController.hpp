@@ -10,7 +10,7 @@
  * File Created: Thursday, 17th October 2024 3:33:52 pm
  * Author: Omegaki113r (omegaki113r@gmail.com)
  * -----
- * Last Modified: Friday, 9th May 2025 5:40:18 pm
+ * Last Modified: Friday, 9th May 2025 5:54:15 pm
  * Modified By: Omegaki113r (omegaki113r@gmail.com)
  * -----
  * Copyright 2024 - 2024 0m3g4ki113r, Xtronic
@@ -99,6 +99,9 @@ namespace Omega
 #elif defined(LINUX_UART)
                 constexpr size_t PORT_NAME_SIZE{256};
 #endif
+
+                constexpr size_t INVALID_UART_HANDLE{0};
+
                 struct EnumeratedUARTPort
                 {
                         char m_friendly_portname[FRIENDLY_PORT_NAME_SIZE + 1]{0};
@@ -132,6 +135,14 @@ namespace Omega
                 typedef u64 Handle;
                 typedef u32 Baudrate;
 
+                struct Configuration
+                {
+                        Baudrate baudrate;
+                        DataBits databits;
+                        Parity parity;
+                        StopBits stopbits;
+                };
+
                 struct Response
                 {
                         OmegaStatus status;
@@ -150,6 +161,9 @@ namespace Omega
                 [[nodiscard]] Response read(Handle in_handle, u8 *out_buffer, const size_t in_read_bytes, u32 in_timeout_ms);
                 [[nodiscard]] Response write(Handle in_handle, const u8 *in_buffer, const size_t in_write_bytes, u32 in_timeout_ms);
                 Handle change_baudrate(Handle in_handle, Baudrate baudrate);
+
+                Configuration get_configuration(Handle in_handle);
+
                 OmegaStatus stop(Handle in_handle);
                 OmegaStatus disconnect(Handle in_handle);
                 OmegaStatus deinit(const Handle);

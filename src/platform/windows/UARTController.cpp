@@ -10,7 +10,7 @@
  * File Created: Monday, 14th April 2025 6:40:03 am
  * Author: Omegaki113r (omegaki113r@gmail.com)
  * -----
- * Last Modified: Friday, 9th May 2025 5:42:49 pm
+ * Last Modified: Friday, 9th May 2025 5:58:43 pm
  * Modified By: Omegaki113r (omegaki113r@gmail.com)
  * -----
  * Copyright 2024 - 2025 0m3g4ki113r, Xtronic
@@ -234,12 +234,33 @@ namespace Omega
 			if (const auto found = s_com_ports.find(in_handle); s_com_ports.end() != found)
 			{
 				auto uart_port = s_com_ports.at(in_handle);
-				stop(in_handle);
-				disconnect(in_handle);
-				deinit(in_handle);
+				if (const auto state = stop(in_handle); eSUCCESS != state)
+				{
+					OMEGA_LOGE("Stopping UART failed");
+					return INVALID_UART_HANDLE;
+				}
+				if (const auto state = disconnect(in_handle); eSUCCESS != state)
+				{
+					OMEGA_LOGE("Disconnecting UART failed");
+					return INVALID_UART_HANDLE;
+				}
+				if (const auto state = deinit(in_handle); eSUCCESS != state)
+				{
+					OMEGA_LOGE("Deiniting UART failed");
+					return INVALID_UART_HANDLE;
+				}
 
 				const auto new_handle = init(uart_port.m_port_name, baudrate, uart_port.m_databits, uart_port.m_parity, uart_port.m_stopbits);
-				connect(new_handle);
+				if (INVALID_UART_HANDLE == new_handle)
+				{
+					OMEGA_LOGE("Initializing UART failed");
+					return INVALID_UART_HANDLE;
+				}
+				if (const auto state = connect(new_handle); eSUCCESS != state)
+				{
+					OMEGA_LOGE("Connecting to UART failed");
+					return INVALID_UART_HANDLE;
+				}
 				if (nullptr != uart_port.m_connected_callback)
 				{
 					add_on_connected_callback(new_handle, uart_port.m_connected_callback);
@@ -250,10 +271,24 @@ namespace Omega
 				}
 				if (nullptr != uart_port.m_read_callbacks)
 				{
-					start(new_handle, uart_port.m_read_callbacks);
+					if (const auto state = start(new_handle, uart_port.m_read_callbacks); eSUCCESS != state)
+					{
+						OMEGA_LOGE("Starting UART failed");
+					}
 				}
+				return new_handle;
 			}
-			return eSUCCESS;
+			return INVALID_UART_HANDLE;
+		}
+
+		Configuration get_configuration(Handle in_handle)
+		{
+			if (const auto found = s_com_ports.find(in_handle); s_com_ports.end() != found)
+			{
+				auto &uart_port = s_com_ports.at(in_handle);
+				return {uart_port.m_baudrate, uart_port.m_databits, uart_port.m_parity, uart_port.m_stopbits};
+			}
+			return {};
 		}
 
 		OmegaStatus stop(Handle in_handle)
