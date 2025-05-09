@@ -10,7 +10,7 @@
  * File Created: Thursday, 17th October 2024 3:33:52 pm
  * Author: Omegaki113r (omegaki113r@gmail.com)
  * -----
- * Last Modified: Saturday, 26th April 2025 3:08:09 pm
+ * Last Modified: Friday, 9th May 2025 5:40:18 pm
  * Modified By: Omegaki113r (omegaki113r@gmail.com)
  * -----
  * Copyright 2024 - 2024 0m3g4ki113r, Xtronic
@@ -146,17 +146,18 @@ namespace Omega
 #endif
                 OmegaStatus connect(Handle in_handle);
                 bool is_connected(Handle in_handle);
-                OmegaStatus start(Handle in_handle,const std::function<void(const Handle, const u8*, const size_t)> &in_callback);
+                OmegaStatus start(Handle in_handle, const std::function<void(const Handle, const u8 *, const size_t)> &in_callback);
                 [[nodiscard]] Response read(Handle in_handle, u8 *out_buffer, const size_t in_read_bytes, u32 in_timeout_ms);
                 [[nodiscard]] Response write(Handle in_handle, const u8 *in_buffer, const size_t in_write_bytes, u32 in_timeout_ms);
+                Handle change_baudrate(Handle in_handle, Baudrate baudrate);
                 OmegaStatus stop(Handle in_handle);
                 OmegaStatus disconnect(Handle in_handle);
                 OmegaStatus deinit(const Handle);
 #if defined(ESP32XX_UART)
                 __attribute__((weak)) void on_data(const Omega::UART::Handle, const u8 *, const size_t);
 #elif defined(WINDOWS_UART) || defined(MACOSX_UART) || defined(LINUX_UART)
-                OmegaStatus add_on_connected_callback(Handle in_handle, std::function<void()>in_callback);
-                OmegaStatus add_on_disconnected_callback(Handle in_handle, std::function<void()>in_callback);
+                OmegaStatus add_on_connected_callback(Handle in_handle, std::function<void()> in_callback);
+                OmegaStatus add_on_disconnected_callback(Handle in_handle, std::function<void()> in_callback);
 #endif
         } // namespace UART
 } // namespace Omega

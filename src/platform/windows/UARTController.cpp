@@ -10,7 +10,7 @@
  * File Created: Monday, 14th April 2025 6:40:03 am
  * Author: Omegaki113r (omegaki113r@gmail.com)
  * -----
- * Last Modified: Saturday, 26th April 2025 3:11:10 pm
+ * Last Modified: Friday, 9th May 2025 5:42:49 pm
  * Modified By: Omegaki113r (omegaki113r@gmail.com)
  * -----
  * Copyright 2024 - 2025 0m3g4ki113r, Xtronic
@@ -227,6 +227,33 @@ namespace Omega
 				return {eSUCCESS, written_bytes};
 			}
 			return {eSUCCESS, 0};
+		}
+
+		Handle change_baudrate(Handle in_handle, Baudrate baudrate)
+		{
+			if (const auto found = s_com_ports.find(in_handle); s_com_ports.end() != found)
+			{
+				auto uart_port = s_com_ports.at(in_handle);
+				stop(in_handle);
+				disconnect(in_handle);
+				deinit(in_handle);
+
+				const auto new_handle = init(uart_port.m_port_name, baudrate, uart_port.m_databits, uart_port.m_parity, uart_port.m_stopbits);
+				connect(new_handle);
+				if (nullptr != uart_port.m_connected_callback)
+				{
+					add_on_connected_callback(new_handle, uart_port.m_connected_callback);
+				}
+				if (nullptr != uart_port.m_disconnected_callback)
+				{
+					add_on_disconnected_callback(new_handle, uart_port.m_disconnected_callback);
+				}
+				if (nullptr != uart_port.m_read_callbacks)
+				{
+					start(new_handle, uart_port.m_read_callbacks);
+				}
+			}
+			return eSUCCESS;
 		}
 
 		OmegaStatus stop(Handle in_handle)
