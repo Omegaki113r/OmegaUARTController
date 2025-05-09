@@ -10,7 +10,7 @@
  * File Created: Monday, 14th April 2025 6:40:03 am
  * Author: Omegaki113r (omegaki113r@gmail.com)
  * -----
- * Last Modified: Friday, 9th May 2025 5:58:43 pm
+ * Last Modified: Friday, 9th May 2025 6:29:48 pm
  * Modified By: Omegaki113r (omegaki113r@gmail.com)
  * -----
  * Copyright 2024 - 2025 0m3g4ki113r, Xtronic
@@ -214,7 +214,7 @@ namespace Omega
 			if (const auto found = s_com_ports.find(in_handle); s_com_ports.end() != found)
 			{
 				auto &uart_port = s_com_ports.at(in_handle);
-				if (UARTStatus::eCONNECTED != uart_port.m_status || UARTStatus::eSTARTED != uart_port.m_status)
+				if (UARTStatus::eCONNECTED != uart_port.m_status && UARTStatus::eSTARTED != uart_port.m_status)
 				{
 					return {eFAILED, 0};
 				}
