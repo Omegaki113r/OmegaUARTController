@@ -10,7 +10,7 @@
  * File Created: Monday, 14th April 2025 6:40:03 am
  * Author: Omegaki113r (omegaki113r@gmail.com)
  * -----
- * Last Modified: Friday, 9th May 2025 6:29:48 pm
+ * Last Modified: Monday, 12th May 2025 11:41:59 am
  * Modified By: Omegaki113r (omegaki113r@gmail.com)
  * -----
  * Copyright 2024 - 2025 0m3g4ki113r, Xtronic
@@ -134,11 +134,16 @@ namespace Omega
 					return eFAILED;
 				}
 				COMMTIMEOUTS timeout_parameters{};
-				timeout_parameters.ReadIntervalTimeout = 50;
-				timeout_parameters.ReadTotalTimeoutConstant = 50;
-				timeout_parameters.ReadTotalTimeoutMultiplier = 10;
-				timeout_parameters.WriteTotalTimeoutConstant = 50;
-				timeout_parameters.WriteTotalTimeoutMultiplier = 10;
+				/* START: READ TIMEOUT PARAMETERS */
+				timeout_parameters.ReadIntervalTimeout = MAXDWORD;
+				timeout_parameters.ReadTotalTimeoutConstant = 0x00;
+				timeout_parameters.ReadTotalTimeoutMultiplier = 0x00;
+				/* END: READ TIMEOUT PARAMETERS */
+
+				/* START: WRITE TIMEOUT PARAMETERS */
+				timeout_parameters.WriteTotalTimeoutConstant = 0x00;
+				timeout_parameters.WriteTotalTimeoutMultiplier = 0x00;
+				/* END: WRITE TIMEOUT PARAMETERS */
 				if (!SetCommTimeouts(uart_port.m_handle, &timeout_parameters))
 				{
 					OMEGA_LOGE("Setting timeouts failed");
@@ -196,7 +201,20 @@ namespace Omega
 				auto &uart_port = s_com_ports.at(in_handle);
 				if (UARTStatus::eCONNECTED != uart_port.m_status && UARTStatus::eSTARTED != uart_port.m_status)
 				{
+					OMEGA_LOGE("UART is in Invalid state");
 					return {eFAILED, 0};
+				}
+				COMMTIMEOUTS timeout_parameters{};
+				if(!GetCommTimeouts(uart_port.m_handle, &timeout_parameters))
+				{
+					OMEGA_LOGE("Timeout retrieval failed");
+					return { eFAILED, 0 };
+				}
+				timeout_parameters.ReadTotalTimeoutConstant = in_timeout_ms;
+				if (!SetCommTimeouts(uart_port.m_handle, &timeout_parameters))
+				{
+					OMEGA_LOGE("Timeout setting failed");
+					return { eFAILED, 0 };
 				}
 				unsigned long read_bytes = 0;
 				if (!ReadFile(uart_port.m_handle, out_buffer, in_read_bytes, &read_bytes, nullptr))
@@ -217,6 +235,18 @@ namespace Omega
 				if (UARTStatus::eCONNECTED != uart_port.m_status && UARTStatus::eSTARTED != uart_port.m_status)
 				{
 					return {eFAILED, 0};
+				}
+				COMMTIMEOUTS timeout_parameters{};
+				if (!GetCommTimeouts(uart_port.m_handle, &timeout_parameters))
+				{
+					OMEGA_LOGE("Timeout retrieval failed");
+					return { eFAILED, 0 };
+				}
+				timeout_parameters.WriteTotalTimeoutConstant = in_timeout_ms;
+				if (!SetCommTimeouts(uart_port.m_handle, &timeout_parameters))
+				{
+					OMEGA_LOGE("Timeout setting failed");
+					return { eFAILED, 0 };
 				}
 				unsigned long written_bytes = 0;
 				if (!WriteFile(uart_port.m_handle, in_buffer, in_write_bytes, &written_bytes, 0))
