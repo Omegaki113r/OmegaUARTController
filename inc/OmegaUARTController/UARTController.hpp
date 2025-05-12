@@ -10,7 +10,7 @@
  * File Created: Thursday, 17th October 2024 3:33:52 pm
  * Author: Omegaki113r (omegaki113r@gmail.com)
  * -----
- * Last Modified: Friday, 9th May 2025 5:54:15 pm
+ * Last Modified: Monday, 12th May 2025 12:00:27 pm
  * Modified By: Omegaki113r (omegaki113r@gmail.com)
  * -----
  * Copyright 2024 - 2024 0m3g4ki113r, Xtronic
@@ -163,6 +163,7 @@ namespace Omega
                 Handle change_baudrate(Handle in_handle, Baudrate baudrate);
 
                 Configuration get_configuration(Handle in_handle);
+                void set_configuration(Handle in_handle, const Configuration &in_config);
 
                 OmegaStatus stop(Handle in_handle);
                 OmegaStatus disconnect(Handle in_handle);

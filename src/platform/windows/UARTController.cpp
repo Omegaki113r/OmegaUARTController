@@ -10,7 +10,7 @@
  * File Created: Monday, 14th April 2025 6:40:03 am
  * Author: Omegaki113r (omegaki113r@gmail.com)
  * -----
- * Last Modified: Monday, 12th May 2025 11:41:59 am
+ * Last Modified: Monday, 12th May 2025 12:03:22 pm
  * Modified By: Omegaki113r (omegaki113r@gmail.com)
  * -----
  * Copyright 2024 - 2025 0m3g4ki113r, Xtronic
@@ -205,16 +205,16 @@ namespace Omega
 					return {eFAILED, 0};
 				}
 				COMMTIMEOUTS timeout_parameters{};
-				if(!GetCommTimeouts(uart_port.m_handle, &timeout_parameters))
+				if (!GetCommTimeouts(uart_port.m_handle, &timeout_parameters))
 				{
 					OMEGA_LOGE("Timeout retrieval failed");
-					return { eFAILED, 0 };
+					return {eFAILED, 0};
 				}
 				timeout_parameters.ReadTotalTimeoutConstant = in_timeout_ms;
 				if (!SetCommTimeouts(uart_port.m_handle, &timeout_parameters))
 				{
 					OMEGA_LOGE("Timeout setting failed");
-					return { eFAILED, 0 };
+					return {eFAILED, 0};
 				}
 				unsigned long read_bytes = 0;
 				if (!ReadFile(uart_port.m_handle, out_buffer, in_read_bytes, &read_bytes, nullptr))
@@ -240,13 +240,13 @@ namespace Omega
 				if (!GetCommTimeouts(uart_port.m_handle, &timeout_parameters))
 				{
 					OMEGA_LOGE("Timeout retrieval failed");
-					return { eFAILED, 0 };
+					return {eFAILED, 0};
 				}
 				timeout_parameters.WriteTotalTimeoutConstant = in_timeout_ms;
 				if (!SetCommTimeouts(uart_port.m_handle, &timeout_parameters))
 				{
 					OMEGA_LOGE("Timeout setting failed");
-					return { eFAILED, 0 };
+					return {eFAILED, 0};
 				}
 				unsigned long written_bytes = 0;
 				if (!WriteFile(uart_port.m_handle, in_buffer, in_write_bytes, &written_bytes, 0))
@@ -319,6 +319,28 @@ namespace Omega
 				return {uart_port.m_baudrate, uart_port.m_databits, uart_port.m_parity, uart_port.m_stopbits};
 			}
 			return {};
+		}
+
+		void set_configuration(Handle in_handle, const Configuration &in_configuration)
+		{
+			if (const auto found = s_com_ports.find(in_handle); s_com_ports.end() != found)
+			{
+				auto &uart_port = s_com_ports.at(in_handle);
+				uart_port.m_baudrate = in_configuration.baudrate;
+				uart_port.m_databits = in_configuration.databits;
+				uart_port.m_parity = in_configuration.parity;
+				uart_port.m_stopbits = in_configuration.stopbits;
+
+				const auto &status = uart_port.m_status;
+				if (UARTStatus::eSTARTED == status)
+				{
+					if (const auto err = stop(in_handle); eSUCCESS != err)
+					{
+						OMEGA_LOGE("Stopping failed");
+						return;
+					}
+				}
+			}
 		}
 
 		OmegaStatus stop(Handle in_handle)
