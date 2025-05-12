@@ -10,7 +10,7 @@
  * File Created: Monday, 14th April 2025 6:40:03 am
  * Author: Omegaki113r (omegaki113r@gmail.com)
  * -----
- * Last Modified: Monday, 12th May 2025 12:03:22 pm
+ * Last Modified: Monday, 12th May 2025 2:21:30 pm
  * Modified By: Omegaki113r (omegaki113r@gmail.com)
  * -----
  * Copyright 2024 - 2025 0m3g4ki113r, Xtronic
@@ -267,7 +267,7 @@ namespace Omega
 				if (const auto state = stop(in_handle); eSUCCESS != state)
 				{
 					OMEGA_LOGE("Stopping UART failed");
-					return INVALID_UART_HANDLE;
+					// return INVALID_UART_HANDLE;
 				}
 				if (const auto state = disconnect(in_handle); eSUCCESS != state)
 				{
