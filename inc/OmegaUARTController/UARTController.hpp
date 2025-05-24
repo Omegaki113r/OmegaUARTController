@@ -157,7 +157,7 @@ namespace Omega
 #endif
                 OmegaStatus connect(Handle in_handle);
                 bool is_connected(Handle in_handle);
-                OmegaStatus start(Handle in_handle, const std::function<void(const Handle, const u8 *, const size_t)> &in_callback);
+                OmegaStatus start(Handle in_handle, const std::function<void(const Handle, const u8 *, const size_t)> in_callback);
                 [[nodiscard]] Response read(Handle in_handle, u8 *out_buffer, const size_t in_read_bytes, u32 in_timeout_ms);
                 [[nodiscard]] Response write(Handle in_handle, const u8 *in_buffer, const size_t in_write_bytes, u32 in_timeout_ms);
                 Handle change_baudrate(Handle in_handle, Baudrate baudrate);
