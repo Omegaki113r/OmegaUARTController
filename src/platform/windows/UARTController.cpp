@@ -10,7 +10,7 @@
  * File Created: Monday, 14th April 2025 6:40:03 am
  * Author: Omegaki113r (omegaki113r@gmail.com)
  * -----
- * Last Modified: Monday, 12th May 2025 2:21:30 pm
+ * Last Modified: Sunday, 25th May 2025 12:19:14 am
  * Modified By: Omegaki113r (omegaki113r@gmail.com)
  * -----
  * Copyright 2024 - 2025 0m3g4ki113r, Xtronic
@@ -168,7 +168,7 @@ namespace Omega
 			return false;
 		}
 
-		OmegaStatus start(Handle in_handle, const std::function<void(const Handle, const u8 *, const size_t)> &in_callback)
+		OmegaStatus start(Handle in_handle, const std::function<void(const Handle, const u8 *, const size_t)> in_callback)
 		{
 			if (nullptr == in_callback)
 				return eFAILED;
