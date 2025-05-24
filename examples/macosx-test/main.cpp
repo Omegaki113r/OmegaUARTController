@@ -42,8 +42,8 @@ int main()
 	const auto read_callback = [](const ::Omega::UART::Handle handle, const u8* data, const size_t data_length) {
 		OMEGA_HEX_LOGD((void*)data, data_length);
 	};
-	::Omega::UART::add_on_read_callback(handle, read_callback);
-	::Omega::UART::start(handle);
+//	::Omega::UART::add_on_read_callback(handle, read_callback);
+//	::Omega::UART::start(handle);
 	for (;;)
 	{
 //		char buffer[100+1]{ 0 };

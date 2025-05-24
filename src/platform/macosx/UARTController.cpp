@@ -16,6 +16,16 @@ namespace Omega
 {
     namespace UART
     {
+		enum class UARTStatus
+		{
+			eINITED,
+			eCONNECTED,
+			eSTARTED,
+			eSTOPPED,
+			eDISCONNECTED,
+			eDEINITED,
+		};
+
         struct UARTPort
         {
             int m_handle;
@@ -24,7 +34,10 @@ namespace Omega
             DataBits m_databits{DataBits::eDATA_BITS_8};
             StopBits m_stopbits{StopBits::eSTOP_BITS_1};
             Parity m_parity{Parity::ePARITY_DISABLE};
-            std::vector<std::function<void(const Handle, const u8 *, const size_t)>> m_read_callbacks;
+            std::function<void()> m_connected_callback;
+			std::function<void(const Handle, const u8 *, const size_t)> m_read_callback;
+			std::function<void()> m_disconnected_callback;
+            UARTStatus m_status{UARTStatus::eDEINITED};
             std::thread *m_uart_read_thread{nullptr};
         };
         __internal__ std::unordered_map<Handle, UARTPort> s_com_ports;
@@ -208,6 +221,45 @@ namespace Omega
             return user_serial_handle;
         }
 
+        OmegaStatus connect(Handle in_handle)
+        {
+            OMEGA_LOGE("Not implemented");
+            return eFAILED;
+        }
+
+        bool is_connected(Handle in_handle)
+        {
+            if (const auto found = s_com_ports.find(in_handle); s_com_ports.end() != found)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        OmegaStatus start(Handle in_handle,const std::function<void(const Handle, const u8 *, const size_t)> in_callback)
+        {
+            if (const auto found = s_com_ports.find(in_handle); s_com_ports.end() != found)
+            {
+                auto &uart_port = s_com_ports.at(in_handle);
+                uart_port.m_read_callback = in_callback;
+                auto uart_read_thread = [in_handle, &uart_port](const UARTPort &in_uart_port)
+                {
+                    for (;;)
+                    {
+                        char buffer[100 + 1]{0};
+                        const auto response = read(in_handle, (u8 *)buffer, 100, 0);
+                        if (0 < response.size)
+                        {
+                                uart_port.m_read_callback(in_handle, (const u8 *)buffer, response.size);
+                        }
+                    }
+                };
+                uart_port.m_uart_read_thread = new std::thread{uart_read_thread, uart_port};
+                return eSUCCESS;
+            }
+            return eFAILED;
+        }
+
         Response read(Handle in_handle, u8 *out_buffer, const size_t in_read_bytes, u32 in_timeout_ms)
         {
             if (const auto found = s_com_ports.find(in_handle); s_com_ports.end() != found)
@@ -240,63 +292,60 @@ namespace Omega
             return {eSUCCESS, 0};
         }
 
-        OmegaStatus add_on_read_callback(Handle in_handle, std::function<void(const Handle, const u8 *, const size_t)> in_callback)
+        Handle change_baudrate(Handle in_handle, Baudrate in_baudrate)
+        {
+            OMEGA_LOGE("Not implemented!!!");
+            return in_handle;
+        }
+
+        Configuration get_configuration(Handle in_handle)
+        {
+            OMEGA_LOGE("Not implemented");
+            return {};
+        }
+
+        void set_configuration(Handle in_handle, Configuration in_configuration)
+        {
+            OMEGA_LOGE("Not implemented");
+        }
+
+        OmegaStatus stop(Handle in_handle)
+        {
+            OMEGA_LOGE("Not implemented");
+            return eFAILED;
+        }
+
+        OmegaStatus disconnect(Handle in_handle)
+        {
+            OMEGA_LOGE("Not implemented");
+            return eFAILED;
+        }
+
+        OmegaStatus deinit(Handle in_handle)
+        {
+            OMEGA_LOGE("Not implemented");
+            return eFAILED;
+        }
+
+        OmegaStatus add_on_connected_callback(Handle in_handle, std::function<void(void)> in_callback)
         {
             if (const auto found = s_com_ports.find(in_handle); s_com_ports.end() != found)
             {
                 auto &uart_port = s_com_ports.at(in_handle);
-                uart_port.m_read_callbacks.push_back(in_callback);
+                
+                uart_port.m_connected_callback = in_callback;
                 return eSUCCESS;
             }
             return eFAILED;
         }
 
-        bool connected(Handle in_handle)
-        {
-            if (const auto found = s_com_ports.find(in_handle); s_com_ports.end() != found)
-            {
-                return true;
-            }
-            return false;
-        }
-
-        OmegaStatus start(Handle in_handle)
+        OmegaStatus add_on_disconnected_callback(Handle in_handle, std::function<void(void)> in_callback)
         {
             if (const auto found = s_com_ports.find(in_handle); s_com_ports.end() != found)
             {
                 auto &uart_port = s_com_ports.at(in_handle);
-                auto uart_read_thread = [in_handle](const UARTPort &in_uart_port)
-                {
-                    for (;;)
-                    {
-                        char buffer[100 + 1]{0};
-                        const auto response = read(in_handle, (u8 *)buffer, 100, 0);
-                        if (0 < response.size)
-                        {
-                            for (const auto &user_callback : in_uart_port.m_read_callbacks)
-                            {
-                                user_callback(in_handle, (const u8 *)buffer, response.size);
-                            }
-                        }
-                    }
-                };
-                uart_port.m_uart_read_thread = new std::thread{uart_read_thread, uart_port};
-                return eSUCCESS;
-            }
-            return eFAILED;
-        }
-
-        OmegaStatus deinit(const Handle in_handle)
-        {
-            if (const auto found = s_com_ports.find(in_handle); s_com_ports.end() != found)
-            {
-                auto &uart_port = s_com_ports.at(in_handle);
-                uart_port.m_uart_read_thread->join();
-                delete uart_port.m_uart_read_thread;
-                uart_port.m_uart_read_thread = nullptr;
-                tcflush(uart_port.m_handle, TCIOFLUSH);
-                close(uart_port.m_handle);
-                s_com_ports.erase(in_handle);
+                
+                uart_port.m_disconnected_callback = in_callback;
                 return eSUCCESS;
             }
             return eFAILED;
